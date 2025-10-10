@@ -1,0 +1,311 @@
+// prisma/schema.prisma
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+// ============================================
+// PERFIL DO USUÁRIO
+// ============================================
+
+model UserProfile {
+  id        String   @id @default(cuid())
+  name      String?
+  email     String?
+  
+  // Informações profissionais
+  yearsOfExperience Int?
+  currentRole       String? // "Junior", "Pleno", "Senior", "Tech Lead"
+  professionalGoal  String? // Meta de carreira
+  
+  // Stack tecnológica (JSON ou relação)
+  techStack         TechStack[]
+  
+  // Configurações
+  workHoursStart    String   @default("09:00")
+  workHoursEnd      String   @default("18:00")
+  pomodoroMinutes   Int      @default(25)
+  breakMinutes      Int      @default(5)
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  // Relacionamentos
+  tasks           Task[]
+  studyGoals      StudyGoal[]
+  studySessions   StudySession[]
+  notes           Note[]
+}
+
+// ============================================
+// STACK TECNOLÓGICA
+// ============================================
+
+model TechStack {
+  id              String      @id @default(cuid())
+  technology      String      // "React", "Next.js", "TypeScript"
+  category        String      // "frontend", "backend", "devops", "database"
+  proficiencyLevel String     @default("learning") // "learning", "intermediate", "advanced", "expert"
+  
+  userProfileId   String
+  userProfile     UserProfile @relation(fields: [userProfileId], references: [id], onDelete: Cascade)
+  
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+  
+  @@unique([userProfileId, technology])
+}
+
+// ============================================
+// METAS DE ESTUDO
+// ============================================
+
+model StudyGoal {
+  id          String   @id @default(cuid())
+  title       String   // "Dominar React Hooks", "Aprender Rust"
+  description String?
+  targetDate  DateTime?
+  status      String   @default("active") // "active", "completed", "paused"
+  
+  userProfileId String
+  userProfile   UserProfile @relation(fields: [userProfileId], references: [id], onDelete: Cascade)
+  
+  // Relacionamentos
+  tasks       Task[]
+  concepts    Concept[]
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+// ============================================
+// RESOURCES (Tabela separada)
+// ============================================
+
+model Resource {
+  id          String   @id @default(cuid())
+  url         String
+  title       String?
+  type        String   // "video", "article", "documentation", "course"
+  isRead      Boolean  @default(false)
+  
+  conceptId   String
+  concept     Concept  @relation(fields: [conceptId], references: [id], onDelete: Cascade)
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  @@unique([conceptId, url]) // Evita duplicatas
+}
+
+// ============================================
+// CONCEITOS DE ESTUDO
+// ============================================
+
+model Concept {
+  id          String   @id @default(cuid())
+  name        String   @unique
+  description String?
+  category    String?
+  
+  // Relacionamentos
+  resources   Resource[] // ✅ Agora é relação real
+  studyGoalId String?
+  studyGoal   StudyGoal? @relation(fields: [studyGoalId], references: [id], onDelete: SetNull)
+  
+  tasks       TaskConcept[]
+  flashcards  Flashcard[]
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+
+// ============================================
+// TASKS (Trabalho + Estudo)
+// ============================================
+
+model Task {
+  id          String   @id @default(cuid())
+  title       String
+  description String?
+  
+  // Tipo de task
+  type        String   @default("work") // "work", "study", "personal"
+  
+  // Status
+  status      String   @default("todo") // "todo", "doing", "done", "blocked"
+  priority    String   @default("medium") // "low", "medium", "high", "urgent"
+  
+  // Datas
+  dueDate     DateTime?
+  completedAt DateTime?
+  
+  // Relação com estudo
+  studyGoalId String?
+  studyGoal   StudyGoal? @relation(fields: [studyGoalId], references: [id], onDelete: SetNull)
+  
+  // Relação com usuário
+  userProfileId String
+  userProfile   UserProfile @relation(fields: [userProfileId], references: [id], onDelete: Cascade)
+  
+  // Relacionamentos
+  concepts      TaskConcept[]
+  flashcards    Flashcard[]
+  sessions      StudySession[]
+  notes         Note[]
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+// ============================================
+// RELAÇÃO MANY-TO-MANY: Task <-> Concept
+// ============================================
+
+model TaskConcept {
+  id        String   @id @default(cuid())
+  
+  taskId    String
+  task      Task     @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  
+  conceptId String
+  concept   Concept  @relation(fields: [conceptId], references: [id], onDelete: Cascade)
+  
+  // Metadados da relação
+  relevance String   @default("medium") // "low", "medium", "high"
+  notes     String?
+  
+  createdAt DateTime @default(now())
+  
+  @@unique([taskId, conceptId])
+}
+
+// ============================================
+// FLASHCARDS
+// ============================================
+
+model Flashcard {
+  id         String    @id @default(cuid())
+  question   String
+  answer     String
+  
+  // Origem
+  source     String    @default("manual") // "manual", "ai_generated"
+  
+  // Repetição espaçada (algoritmo SM-2)
+  easeFactor Float     @default(2.5)
+  interval   Int       @default(1) // dias
+  repetitions Int      @default(0)
+  nextReview DateTime?
+  
+  // Relacionamentos
+  taskId     String?
+  task       Task?     @relation(fields: [taskId], references: [id], onDelete: SetNull)
+  
+  conceptId  String?
+  concept    Concept?  @relation(fields: [conceptId], references: [id], onDelete: SetNull)
+  
+  reviews    FlashcardReview[]
+  
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+}
+
+// ============================================
+// REVISÕES DE FLASHCARDS (histórico) 
+// ============================================
+
+model FlashcardReview {
+  id           String    @id @default(cuid())
+  
+  flashcardId  String
+  flashcard    Flashcard @relation(fields: [flashcardId], references: [id], onDelete: Cascade)
+  
+  quality      Int       // 0-5 (algoritmo SM-2)
+  timeSpent    Int?      // segundos
+  
+  createdAt    DateTime  @default(now())
+}
+
+// ============================================
+// SESSÕES DE ESTUDO/TRABALHO
+// ============================================
+
+model StudySession {
+  id          String   @id @default(cuid())
+  
+  // Tipo de sessão
+  type        String   // "study", "work", "review", "break"
+  
+  // Duração
+  duration    Int      // minutos
+  
+  // Relacionamentos
+  taskId      String?
+  task        Task?    @relation(fields: [taskId], references: [id], onDelete: SetNull)
+  
+  userProfileId String
+  userProfile   UserProfile @relation(fields: [userProfileId], references: [id], onDelete: Cascade)
+  
+  // Metadados
+  notes       String?
+  focusScore  Int?     // 1-10 (auto-avaliação de foco)
+  
+  createdAt   DateTime @default(now())
+}
+
+// ============================================
+// TAGS (Tabela separada)
+// ============================================
+
+model Tag {
+  id        String   @id @default(cuid())
+  name      String   @unique // "react", "bug", "urgent"
+  color     String?  // "#FF5733" para UI
+  
+  notes     NoteTag[]
+  
+  createdAt DateTime @default(now())
+}
+
+model NoteTag {
+  id     String @id @default(cuid())
+  
+  noteId String
+  note   Note   @relation(fields: [noteId], references: [id], onDelete: Cascade)
+  
+  tagId  String
+  tag    Tag    @relation(fields: [tagId], references: [id], onDelete: Cascade)
+  
+  createdAt DateTime @default(now())
+  
+  @@unique([noteId, tagId])
+}
+
+// ============================================
+// NOTAS LIVRES
+// ============================================
+
+model Note {
+  id          String   @id @default(cuid())
+  title       String?
+  content     String
+  
+  // Relacionamentos
+  tags        NoteTag[] // ✅ Agora é relação real
+  
+  taskId      String?
+  task        Task?    @relation(fields: [taskId], references: [id], onDelete: SetNull)
+  
+  userProfileId String
+  userProfile   UserProfile @relation(fields: [userProfileId], references: [id], onDelete: Cascade)
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
