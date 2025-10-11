@@ -16,11 +16,6 @@ import {
   getUpcomingEvents,
   calculateSessionStats,
   groupSessionsByDay,
-  calculateDailyStats,
-  formatDuration,
-  formatTimeRemaining,
-  isToday,
-  isTomorrow,
   getWeekStart,
   getWeekEnd,
   generateId,
@@ -99,8 +94,8 @@ export class CalendarService {
     events: ScheduledEvent[] = [],
     sessions: FocusSession[] = []
   ): {
-    tasksToday: any[];
-    flashcardsDue: any[];
+    tasksToday: unknown[];
+    flashcardsDue: unknown[];
     focusTimeToday: number;
     upcomingEvents: ScheduledEvent[];
     eventsToday: ScheduledEvent[];
@@ -265,7 +260,7 @@ export class CalendarService {
     endDate?: Date
   ): ScheduledEvent[] {
     const events: ScheduledEvent[] = [];
-    let currentDate = new Date(baseEvent.scheduledTime);
+    const currentDate = new Date(baseEvent.scheduledTime);
     const maxDate = endDate || new Date(Date.now() + 365 * 24 * 60 * 60 * 1000); // 1 ano
 
     while (currentDate <= maxDate) {

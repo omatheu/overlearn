@@ -1,11 +1,8 @@
 import { useAtom, useAtomValue } from 'jotai';
-import { useCallback, useMemo } from 'react';
+import { useCallback } from 'react';
 import {
   currentSessionAtom,
   isWorkingNowAtom,
-  upcomingEventsAtom,
-  timeUntilNextEventAtom,
-  todayStatsAtom,
   startSessionAtom,
   endSessionAtom,
   pauseSessionAtom,
@@ -19,9 +16,9 @@ import { UseCalendarReturn, FocusSession } from '../types';
 export function useCalendar(): UseCalendarReturn {
   const [currentSession] = useAtom(currentSessionAtom);
   const isWorkingNow = useAtomValue(isWorkingNowAtom);
-  const upcomingEvents = useAtomValue(upcomingEventsAtom);
-  const timeUntilNextEvent = useAtomValue(timeUntilNextEventAtom);
-  const todayStats = useAtomValue(todayStatsAtom);
+  // const upcomingEvents = useAtomValue(upcomingEventsAtom);
+  // const timeUntilNextEvent = useAtomValue(timeUntilNextEventAtom);
+  // const todayStats = useAtomValue(todayStatsAtom);
   const [events] = useAtom(scheduledEventsAtom);
   const [sessions] = useAtom(focusSessionsAtom);
 

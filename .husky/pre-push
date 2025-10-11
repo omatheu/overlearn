@@ -1,0 +1,13 @@
+echo "🧪 Executando testes antes do push..."
+
+# Executar testes
+npm test
+
+# Verificar se os testes passaram
+if [ $? -ne 0 ]; then
+  echo "❌ Testes falharam! Push cancelado."
+  echo "💡 Execute 'npm test' localmente para ver os erros."
+  exit 1
+fi
+
+echo "✅ Todos os testes passaram! Prosseguindo com o push..."

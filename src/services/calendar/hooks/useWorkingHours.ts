@@ -1,5 +1,5 @@
 import { useAtom } from 'jotai';
-import { useCallback, useMemo } from 'react';
+import { useCallback } from 'react';
 import { workingHoursAtom } from '../atoms';
 import { CalendarService } from '../CalendarService';
 import { UseWorkingHoursReturn, WorkingHours } from '../types';

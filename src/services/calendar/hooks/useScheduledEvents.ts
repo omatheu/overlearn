@@ -1,5 +1,5 @@
 import { useAtom } from 'jotai';
-import { useCallback, useMemo } from 'react';
+import { useCallback } from 'react';
 import {
   scheduledEventsAtom,
   addScheduledEventAtom,
@@ -42,14 +42,14 @@ export function useScheduledEvents(): UseScheduledEventsReturn {
   }, [events]);
 
   // Memoizar eventos próximos para performance
-  const upcomingEvents = useMemo(() => {
-    return getUpcomingEvents(5);
-  }, [getUpcomingEvents]);
+  // const upcomingEvents = useMemo(() => {
+  //   return getUpcomingEvents(5);
+  // }, [getUpcomingEvents]);
 
   // Memoizar eventos de hoje
-  const todayEvents = useMemo(() => {
-    return getEventsForDate(new Date());
-  }, [getEventsForDate]);
+  // const todayEvents = useMemo(() => {
+  //   return getEventsForDate(new Date());
+  // }, [getEventsForDate]);
 
   return {
     events,

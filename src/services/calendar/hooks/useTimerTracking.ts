@@ -2,15 +2,14 @@ import { useAtom, useAtomValue } from 'jotai';
 import { useCallback, useEffect, useState } from 'react';
 import {
   currentSessionAtom,
-  isTrackingAtom,
-  currentSessionDurationAtom
+  isTrackingAtom
 } from '../atoms';
 import { UseTimerTrackingReturn, FocusSession } from '../types';
 
 export function useTimerTracking(): UseTimerTrackingReturn {
   const [currentSession] = useAtom(currentSessionAtom);
   const isTracking = useAtomValue(isTrackingAtom);
-  const sessionDuration = useAtomValue(currentSessionDurationAtom);
+  // const sessionDuration = useAtomValue(currentSessionDurationAtom);
   const [elapsedTime, setElapsedTime] = useState(0);
 
   // Atualizar tempo decorrido a cada segundo

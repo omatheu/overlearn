@@ -13,7 +13,7 @@ export interface FocusSession {
   duration: number; // minutos
   type: 'pomodoro' | 'study' | 'work';
   interrupted: boolean;
-  metadata?: Record<string, any>;
+  metadata?: Record<string, unknown>;
 }
 
 export interface ScheduledEvent {
@@ -26,7 +26,7 @@ export interface ScheduledEvent {
     interval: number;
     endDate?: Date;
   };
-  metadata?: Record<string, any>;
+  metadata?: Record<string, unknown>;
   completed?: boolean;
 }
 
@@ -87,7 +87,7 @@ export interface CalendarEvent {
   end: Date;
   type: 'task' | 'flashcard' | 'break' | 'meeting' | 'custom';
   color?: string;
-  metadata?: Record<string, any>;
+  metadata?: Record<string, unknown>;
 }
 
 export interface FocusMetrics {
@@ -119,8 +119,8 @@ export interface UseCalendarReturn {
   resumeSession: () => void;
   getTimeUntilNextEvent: () => number;
   getDailyOverview: (date?: Date) => {
-    tasksToday: any[];
-    flashcardsDue: any[];
+    tasksToday: unknown[];
+    flashcardsDue: unknown[];
     focusTimeToday: number;
     upcomingEvents: ScheduledEvent[];
   };
