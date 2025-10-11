@@ -20,7 +20,7 @@ async function getTasks(params: SearchParams) {
   // Build where clause
   const where: {
     userProfileId: string;
-    OR?: Array<{ title?: { contains: string; mode: string }; description?: { contains: string; mode: string } }>;
+    OR?: Array<{ title?: { contains: string }; description?: { contains: string } }>;
     status?: string;
     priority?: string;
   } = {
@@ -29,8 +29,8 @@ async function getTasks(params: SearchParams) {
 
   if (params.search) {
     where.OR = [
-      { title: { contains: params.search, mode: 'insensitive' } },
-      { description: { contains: params.search, mode: 'insensitive' } }
+      { title: { contains: params.search } },
+      { description: { contains: params.search } }
     ];
   }
 
@@ -88,9 +88,10 @@ async function getTasks(params: SearchParams) {
 export default async function TasksPage({
   searchParams,
 }: {
-  searchParams: SearchParams;
+  searchParams: Promise<SearchParams>;
 }) {
-  const tasks = await getTasks(searchParams);
+  const params = await searchParams;
+  const tasks = await getTasks(params);
 
   return (
     <div className="container max-w-6xl py-8">
@@ -123,11 +124,11 @@ export default async function TasksPage({
           </div>
           <h3 className="text-lg font-semibold mb-2">Nenhuma task encontrada</h3>
           <p className="text-muted-foreground mb-4">
-            {searchParams.search || searchParams.status || searchParams.priority
+            {params.search || params.status || params.priority
               ? 'Tente ajustar os filtros de busca'
               : 'Comece criando sua primeira task'}
           </p>
-          {!searchParams.search && !searchParams.status && !searchParams.priority && (
+          {!params.search && !params.status && !params.priority && (
             <Link href="/tasks/new">
               <Button>
                 <Plus className="h-4 w-4 mr-2" />

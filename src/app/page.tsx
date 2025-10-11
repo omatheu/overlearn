@@ -10,7 +10,7 @@ export default function HomePage() {
       {/* Header */}
       <header className="border-b">
         <div className="container mx-auto px-4 py-4">
-          <h1 className="text-2xl font-bold">DevFlow</h1>
+          <h1 className="text-2xl font-bold">OverLearn</h1>
         </div>
       </header>
 

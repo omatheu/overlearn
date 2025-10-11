@@ -16,7 +16,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - **AI Integration**: Google Generative AI (Gemini models: flash and pro)
 - **Forms**: React Hook Form with Zod validation
 
-## Common Commands
+## Common Commands  
 
 ```bash
 # Development

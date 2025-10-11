@@ -36,10 +36,11 @@ async function getConcepts() {
 export default async function EditTaskPage({
   params,
 }: {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }) {
+  const { id } = await params;
   const [task, concepts] = await Promise.all([
-    getTask(params.id),
+    getTask(id),
     getConcepts()
   ]);
 

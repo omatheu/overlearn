@@ -4,7 +4,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { TaskStatusBadge } from '@/components/tasks/task-status-badge';
-import { ChevronLeft, Pencil, Trash2, Clock, Calendar, Tag } from 'lucide-react';
+import { DeleteButton } from '@/components/tasks/delete-button';
+import { ChevronLeft, Pencil, Clock, Calendar, Tag } from 'lucide-react';
 import Link from 'next/link';
 import { deleteTaskAction } from '@/app/tasks/actions';
 
@@ -46,9 +47,10 @@ const priorityLabels = {
 export default async function TaskDetailPage({
   params,
 }: {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }) {
-  const task = await getTask(params.id);
+  const { id } = await params;
+  const task = await getTask(id);
 
   if (!task) {
     notFound();
@@ -80,19 +82,7 @@ export default async function TaskDetailPage({
 
           <form action={deleteTaskAction}>
             <input type="hidden" name="id" value={task.id} />
-            <Button
-              variant="destructive"
-              size="sm"
-              type="submit"
-              onClick={(e) => {
-                if (!confirm('Tem certeza que deseja deletar esta task?')) {
-                  e.preventDefault();
-                }
-              }}
-            >
-              <Trash2 className="h-4 w-4 mr-2" />
-              Deletar
-            </Button>
+            <DeleteButton />
           </form>
         </div>
       </div>
