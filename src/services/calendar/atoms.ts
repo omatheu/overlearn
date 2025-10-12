@@ -154,7 +154,7 @@ export const startSessionAtom = atom(
     
     if (currentSession) {
       // Finalizar sessão atual se existir
-      set(endSessionAtom, null);
+      set(endSessionAtom);
     }
     
     const newSession: FocusSession = {
@@ -206,10 +206,8 @@ export const endSessionAtom = atom(
     
     todayStats.totalFocusTime += endedSession.duration;
     todayStats.sessionsCompleted += 1;
-    
-    if (endedSession.type === 'break') {
-      todayStats.breaksTaken += 1;
-    }
+
+    // Note: FocusSession type doesn't include 'break', so this condition is removed
     
     set(dailyStatsAtom, {
       ...dailyStats,
@@ -229,13 +227,16 @@ export const pauseSessionAtom = atom(
     
     if (!currentSession) return;
     
+    const currentInterruptions = currentSession.metadata?.interruptions;
+    const interruptionCount = typeof currentInterruptions === 'number' ? currentInterruptions : 0;
+
     const pausedSession: FocusSession = {
       ...currentSession,
       interrupted: true,
       metadata: {
         ...currentSession.metadata,
         pausedAt: new Date().toISOString(),
-        interruptions: (currentSession.metadata?.interruptions || 0) + 1
+        interruptions: interruptionCount + 1
       }
     };
     

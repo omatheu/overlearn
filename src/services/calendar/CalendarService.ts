@@ -19,7 +19,8 @@ import {
   getWeekStart,
   getWeekEnd,
   generateId,
-  validateWorkingHours
+  validateWorkingHours,
+  formatDuration
 } from './utils';
 
 export class CalendarService {
@@ -115,7 +116,8 @@ export class CalendarService {
     const upcomingEvents = this.getUpcomingEvents(events, 120); // Próximas 2 horas
 
     const interruptionsCount = sessionsToday.reduce((total, session) => {
-      return total + (session.metadata?.interruptions || 0);
+      const interruptions = session.metadata?.interruptions;
+      return total + (typeof interruptions === 'number' ? interruptions : 0);
     }, 0);
 
     const productivityScore = sessionsToday.length > 0 
@@ -153,7 +155,8 @@ export class CalendarService {
       : 0;
 
     const interruptionsCount = sessions.reduce((total, session) => {
-      return total + (session.metadata?.interruptions || 0);
+      const interruptions = session.metadata?.interruptions;
+      return total + (typeof interruptions === 'number' ? interruptions : 0);
     }, 0);
 
     // Calcular streak atual

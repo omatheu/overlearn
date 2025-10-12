@@ -1,8 +1,22 @@
+import { PageLayout, PageHeader, PageContent } from "@/components/layout";
+import { EmptyState } from "@/components/ui/empty-state";
+import { User } from "lucide-react";
+
 export default function ProfilePage() {
   return (
-    <div className="container max-w-6xl py-8">
-      <h1 className="text-3xl font-bold mb-4">Perfil</h1>
-      <p className="text-muted-foreground">Em breve...</p>
-    </div>
+    <PageLayout maxWidth="xl">
+      <PageHeader
+        title="Perfil"
+        description="Gerencie suas informações e preferências"
+      />
+
+      <PageContent>
+        <EmptyState
+          icon={User}
+          title="Página em Desenvolvimento"
+          description="O gerenciamento de perfil estará disponível em breve"
+        />
+      </PageContent>
+    </PageLayout>
   );
 }

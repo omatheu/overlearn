@@ -8,6 +8,9 @@ import { DeleteButton } from '@/components/tasks/delete-button';
 import { ChevronLeft, Pencil, Clock, Calendar, Tag } from 'lucide-react';
 import Link from 'next/link';
 import { deleteTaskAction } from '@/app/tasks/actions';
+import { PageLayout, PageContent, Section } from '@/components/layout';
+import { Stack } from '@/components/layout';
+import { PriorityBadge } from '@/components/ui/priority-badge';
 
 async function getTask(id: string) {
   const task = await prisma.task.findUnique({
@@ -30,20 +33,6 @@ async function getTask(id: string) {
   return task;
 }
 
-const priorityColors = {
-  low: 'secondary',
-  medium: 'default',
-  high: 'destructive',
-  urgent: 'destructive'
-} as const;
-
-const priorityLabels = {
-  low: 'Baixa',
-  medium: 'Média',
-  high: 'Alta',
-  urgent: 'Urgente'
-};
-
 export default async function TaskDetailPage({
   params,
 }: {
@@ -62,143 +51,144 @@ export default async function TaskDetailPage({
   );
 
   return (
-    <div className="container max-w-4xl py-8">
+    <PageLayout maxWidth="lg">
       {/* Header */}
-      <div className="mb-6 flex items-center justify-between">
-        <Link href="/tasks">
-          <Button variant="ghost" size="sm">
-            <ChevronLeft className="h-4 w-4 mr-1" />
-            Voltar para Tasks
-          </Button>
-        </Link>
-
-        <div className="flex gap-2">
-          <Link href={`/tasks/${task.id}/edit`}>
-            <Button variant="outline" size="sm">
-              <Pencil className="h-4 w-4 mr-2" />
-              Editar
+      <div className="mb-6">
+        <Stack direction="horizontal" spacing={4} justify="between" align="center">
+          <Link href="/tasks">
+            <Button variant="ghost" size="sm">
+              <ChevronLeft className="h-4 w-4 mr-1" />
+              Voltar para Tasks
             </Button>
           </Link>
 
-          <form action={deleteTaskAction}>
-            <input type="hidden" name="id" value={task.id} />
-            <DeleteButton />
-          </form>
-        </div>
+          <Stack direction="horizontal" spacing={2}>
+            <Link href={`/tasks/${task.id}/edit`}>
+              <Button variant="outline" size="sm">
+                <Pencil className="h-4 w-4 mr-2" />
+                Editar
+              </Button>
+            </Link>
+
+            <form action={deleteTaskAction}>
+              <input type="hidden" name="id" value={task.id} />
+              <DeleteButton />
+            </form>
+          </Stack>
+        </Stack>
       </div>
 
-      {/* Main Card */}
-      <Card className="mb-6">
-        <CardHeader>
-          <div className="flex items-start justify-between gap-4">
-            <div className="flex-1">
-              <CardTitle className="text-2xl mb-3">{task.title}</CardTitle>
-              <div className="flex flex-wrap gap-2">
-                <TaskStatusBadge status={task.status as 'todo' | 'doing' | 'done' | 'blocked'} />
-                <Badge variant={priorityColors[task.priority as keyof typeof priorityColors]}>
-                  {priorityLabels[task.priority as keyof typeof priorityLabels]}
-                </Badge>
+      <PageContent>
+        {/* Main Card */}
+        <Section>
+          <Card>
+            <CardHeader>
+              <div className="space-y-4">
+                <CardTitle className="text-2xl">{task.title}</CardTitle>
+                <Stack direction="horizontal" spacing={2}>
+                  <TaskStatusBadge status={task.status as 'todo' | 'doing' | 'done' | 'blocked'} />
+                  <PriorityBadge priority={task.priority as 'low' | 'medium' | 'high' | 'urgent'} />
+                </Stack>
               </div>
-            </div>
-          </div>
-        </CardHeader>
+            </CardHeader>
 
-        <CardContent className="space-y-6">
-          {/* Description */}
-          {task.description && (
-            <div>
-              <h3 className="font-semibold mb-2">Descrição</h3>
-              <p className="text-muted-foreground whitespace-pre-wrap">
-                {task.description}
-              </p>
-            </div>
-          )}
-
-          {/* Metadata Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4 border-t">
-            <div className="flex items-center gap-2 text-sm">
-              <Calendar className="h-4 w-4 text-muted-foreground" />
-              <div>
-                <div className="text-muted-foreground">Criada em</div>
-                <div className="font-semibold">
-                  {new Date(task.createdAt).toLocaleDateString('pt-BR')}
-                </div>
-              </div>
-            </div>
-
-            {task.completedAt && (
-              <div className="flex items-center gap-2 text-sm">
-                <Calendar className="h-4 w-4 text-muted-foreground" />
+            <CardContent className="space-y-6">
+              {/* Description */}
+              {task.description && (
                 <div>
-                  <div className="text-muted-foreground">Concluída em</div>
-                  <div className="font-semibold">
-                    {new Date(task.completedAt).toLocaleDateString('pt-BR')}
-                  </div>
+                  <h3 className="font-semibold mb-2">Descrição</h3>
+                  <p className="text-muted-foreground whitespace-pre-wrap">
+                    {task.description}
+                  </p>
                 </div>
-              </div>
-            )}
-          </div>
+              )}
 
-          {/* Concepts */}
-          {task.concepts.length > 0 && (
-            <div className="pt-4 border-t">
-              <div className="flex items-center gap-2 mb-3">
-                <Tag className="h-4 w-4 text-muted-foreground" />
-                <h3 className="font-semibold">Conceitos Relacionados</h3>
-              </div>
-              <div className="flex flex-wrap gap-2">
-                {task.concepts.map((tc) => (
-                  <Badge key={tc.concept.id} variant="outline">
-                    {tc.concept.name}
-                  </Badge>
-                ))}
-              </div>
-            </div>
-          )}
-        </CardContent>
-      </Card>
-
-      {/* Study Sessions */}
-      {task.sessions.length > 0 && (
-        <Card>
-          <CardHeader>
-            <CardTitle>Sessões de Estudo</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="mb-4 p-3 bg-muted rounded-lg">
-              <div className="text-sm text-muted-foreground">Tempo Total Estudado</div>
-              <div className="text-2xl font-bold">
-                {Math.floor(totalStudyTime / 60)}h {totalStudyTime % 60}min
-              </div>
-            </div>
-
-            <div className="space-y-2">
-              {task.sessions.map((session) => (
-                <div
-                  key={session.id}
-                  className="flex justify-between items-center p-3 rounded-lg border"
-                >
+              {/* Metadata Grid */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4 border-t">
+                <div className="flex items-center gap-2 text-sm">
+                  <Calendar className="h-4 w-4 text-muted-foreground" />
                   <div>
-                    <div className="font-medium">
-                      {new Date(session.createdAt).toLocaleDateString('pt-BR')}
-                    </div>
-                    <div className="text-sm text-muted-foreground">
-                      {new Date(session.createdAt).toLocaleTimeString('pt-BR', {
-                        hour: '2-digit',
-                        minute: '2-digit'
-                      })}
+                    <div className="text-muted-foreground">Criada em</div>
+                    <div className="font-semibold">
+                      {new Date(task.createdAt).toLocaleDateString('pt-BR')}
                     </div>
                   </div>
-                  <Badge variant="outline">
-                    <Clock className="h-3 w-3 mr-1" />
-                    {session.duration} min
-                  </Badge>
                 </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-      )}
-    </div>
+
+                {task.completedAt && (
+                  <div className="flex items-center gap-2 text-sm">
+                    <Calendar className="h-4 w-4 text-muted-foreground" />
+                    <div>
+                      <div className="text-muted-foreground">Concluída em</div>
+                      <div className="font-semibold">
+                        {new Date(task.completedAt).toLocaleDateString('pt-BR')}
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Concepts */}
+              {task.concepts.length > 0 && (
+                <div className="pt-4 border-t">
+                  <div className="flex items-center gap-2 mb-3">
+                    <Tag className="h-4 w-4 text-muted-foreground" />
+                    <h3 className="font-semibold">Conceitos Relacionados</h3>
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    {task.concepts.map((tc) => (
+                      <Badge key={tc.concept.id} variant="outline">
+                        {tc.concept.name}
+                      </Badge>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </Section>
+
+        {/* Study Sessions */}
+        {task.sessions.length > 0 && (
+          <Section title="Sessões de Estudo">
+            <Card>
+              <CardContent className="pt-6">
+                <div className="mb-4 p-4 bg-muted/50 rounded-lg">
+                  <div className="text-sm text-muted-foreground">Tempo Total Estudado</div>
+                  <div className="text-3xl font-bold">
+                    {Math.floor(totalStudyTime / 60)}h {totalStudyTime % 60}min
+                  </div>
+                </div>
+
+                <Stack direction="vertical" spacing={2}>
+                  {task.sessions.map((session) => (
+                    <div
+                      key={session.id}
+                      className="flex justify-between items-center p-3 rounded-lg border hover:bg-accent/50 transition-colors"
+                    >
+                      <div>
+                        <div className="font-medium">
+                          {new Date(session.createdAt).toLocaleDateString('pt-BR')}
+                        </div>
+                        <div className="text-sm text-muted-foreground">
+                          {new Date(session.createdAt).toLocaleTimeString('pt-BR', {
+                            hour: '2-digit',
+                            minute: '2-digit'
+                          })}
+                        </div>
+                      </div>
+                      <Badge variant="outline">
+                        <Clock className="h-3 w-3 mr-1" />
+                        {session.duration} min
+                      </Badge>
+                    </div>
+                  ))}
+                </Stack>
+              </CardContent>
+            </Card>
+          </Section>
+        )}
+      </PageContent>
+    </PageLayout>
   );
 }

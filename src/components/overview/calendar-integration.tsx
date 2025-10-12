@@ -157,7 +157,7 @@ export function CalendarIntegration() {
             </div>
             <div className="text-center">
               <div className="text-2xl font-bold text-green-600">
-                {dailyOverview.sessionsToday.length}
+                {dailyOverview.sessionsToday?.length || 0}
               </div>
               <div className="text-sm text-muted-foreground">Sessões</div>
             </div>

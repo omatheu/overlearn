@@ -125,10 +125,13 @@ export function calculateSessionStats(session: FocusSession): {
     ? Math.floor((session.endTime.getTime() - session.startTime.getTime()) / 60000)
     : Math.floor((new Date().getTime() - session.startTime.getTime()) / 60000);
   
+  const interruptions = session.metadata?.interruptions;
+  const interruptionCount = typeof interruptions === 'number' ? interruptions : 0;
+
   return {
     duration,
-    efficiency: session.interrupted ? Math.max(0, 100 - (session.metadata?.interruptions || 0) * 10) : 100,
-    interruptions: session.metadata?.interruptions || 0
+    efficiency: session.interrupted ? Math.max(0, 100 - interruptionCount * 10) : 100,
+    interruptions: interruptionCount
   };
 }
 
@@ -165,7 +168,8 @@ export function calculateDailyStats(
 
   const sessionsCompleted = daySessions.filter(s => s.endTime).length;
   const interruptionsCount = daySessions.reduce((total, session) => {
-    return total + (session.metadata?.interruptions || 0);
+    const interruptions = session.metadata?.interruptions;
+    return total + (typeof interruptions === 'number' ? interruptions : 0);
   }, 0);
 
   const productivityScore = sessionsCompleted > 0 
@@ -178,7 +182,7 @@ export function calculateDailyStats(
     sessionsCompleted,
     tasksCompleted: 0, // Será calculado pelo sistema de tasks
     flashcardsReviewed: 0, // Será calculado pelo sistema de flashcards
-    breaksTaken: daySessions.filter(s => s.type === 'break').length,
+    breaksTaken: 0, // FocusSession type doesn't include 'break'
     productivityScore
   };
 }

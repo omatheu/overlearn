@@ -123,6 +123,9 @@ export interface UseCalendarReturn {
     flashcardsDue: unknown[];
     focusTimeToday: number;
     upcomingEvents: ScheduledEvent[];
+    eventsToday: ScheduledEvent[];
+    sessionsToday: FocusSession[];
+    productivityScore: number;
   };
 }
 
