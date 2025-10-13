@@ -1,0 +1,160 @@
+/**
+ * OverLearn Design System
+ * Design tokens centralizados para consistência visual
+ */
+
+:root {
+  /* ========================================
+     CORES SEMÂNTICAS
+     ======================================== */
+
+  /* Status Colors */
+  --color-success: oklch(0.7 0.15 142);
+  --color-success-foreground: oklch(0.98 0 0);
+  --color-warning: oklch(0.75 0.15 85);
+  --color-warning-foreground: oklch(0.2 0 0);
+  --color-error: oklch(0.577 0.245 27.325);
+  --color-error-foreground: oklch(0.98 0 0);
+  --color-info: oklch(0.6 0.15 240);
+  --color-info-foreground: oklch(0.98 0 0);
+
+  /* Priority Colors (para tasks) */
+  --color-priority-urgent: oklch(0.577 0.245 27.325);
+  --color-priority-urgent-bg: oklch(0.95 0.05 27.325);
+  --color-priority-high: oklch(0.75 0.15 40);
+  --color-priority-high-bg: oklch(0.95 0.05 40);
+  --color-priority-medium: oklch(0.6 0.15 240);
+  --color-priority-medium-bg: oklch(0.95 0.05 240);
+  --color-priority-low: oklch(0.7 0.05 0);
+  --color-priority-low-bg: oklch(0.95 0 0);
+
+  /* ========================================
+     TIPOGRAFIA
+     ======================================== */
+
+  /* Font Families */
+  --font-display: var(--font-geist-sans);
+  --font-body: var(--font-geist-sans);
+  --font-code: var(--font-geist-mono);
+
+  /* Font Sizes */
+  --text-xs: 0.75rem;      /* 12px */
+  --text-sm: 0.875rem;     /* 14px */
+  --text-base: 1rem;       /* 16px */
+  --text-lg: 1.125rem;     /* 18px */
+  --text-xl: 1.25rem;      /* 20px */
+  --text-2xl: 1.5rem;      /* 24px */
+  --text-3xl: 1.875rem;    /* 30px */
+  --text-4xl: 2.25rem;     /* 36px */
+  --text-5xl: 3rem;        /* 48px */
+
+  /* Line Heights */
+  --leading-tight: 1.25;
+  --leading-normal: 1.5;
+  --leading-relaxed: 1.75;
+
+  /* Font Weights */
+  --font-light: 300;
+  --font-normal: 400;
+  --font-medium: 500;
+  --font-semibold: 600;
+  --font-bold: 700;
+
+  /* ========================================
+     ESPAÇAMENTO
+     ======================================== */
+
+  --space-0: 0;
+  --space-1: 0.25rem;   /* 4px */
+  --space-2: 0.5rem;    /* 8px */
+  --space-3: 0.75rem;   /* 12px */
+  --space-4: 1rem;      /* 16px */
+  --space-5: 1.25rem;   /* 20px */
+  --space-6: 1.5rem;    /* 24px */
+  --space-8: 2rem;      /* 32px */
+  --space-10: 2.5rem;   /* 40px */
+  --space-12: 3rem;     /* 48px */
+  --space-16: 4rem;     /* 64px */
+  --space-20: 5rem;     /* 80px */
+  --space-24: 6rem;     /* 96px */
+
+  /* Container Spacing */
+  --container-padding: var(--space-6);
+  --section-spacing: var(--space-12);
+  --card-padding: var(--space-6);
+
+  /* ========================================
+     BORDAS E SOMBRAS
+     ======================================== */
+
+  /* Border Radius (além dos já existentes) */
+  --radius-xs: 0.25rem;
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --radius-2xl: 1rem;
+  --radius-full: 9999px;
+
+  /* Shadows */
+  --shadow-xs: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+  --shadow-sm: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+  --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+  --shadow-2xl: 0 25px 50px -12px rgb(0 0 0 / 0.25);
+
+  /* ========================================
+     ANIMAÇÕES
+     ======================================== */
+
+  /* Durations */
+  --duration-fast: 150ms;
+  --duration-normal: 250ms;
+  --duration-slow: 350ms;
+
+  /* Easings */
+  --ease-in: cubic-bezier(0.4, 0, 1, 1);
+  --ease-out: cubic-bezier(0, 0, 0.2, 1);
+  --ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);
+  --ease-bounce: cubic-bezier(0.68, -0.55, 0.265, 1.55);
+
+  /* ========================================
+     BREAKPOINTS (para referência)
+     ======================================== */
+
+  /* sm: 640px */
+  /* md: 768px */
+  /* lg: 1024px */
+  /* xl: 1280px */
+  /* 2xl: 1536px */
+
+  /* ========================================
+     Z-INDEX SCALE
+     ======================================== */
+
+  --z-base: 0;
+  --z-dropdown: 1000;
+  --z-sticky: 1020;
+  --z-fixed: 1030;
+  --z-modal-backdrop: 1040;
+  --z-modal: 1050;
+  --z-popover: 1060;
+  --z-tooltip: 1070;
+}
+
+.dark {
+  /* Ajustes de cores para dark mode */
+  --color-priority-urgent-bg: oklch(0.25 0.1 27.325);
+  --color-priority-high-bg: oklch(0.25 0.08 40);
+  --color-priority-medium-bg: oklch(0.25 0.08 240);
+  --color-priority-low-bg: oklch(0.25 0 0);
+
+  /* Ajuste de sombras para dark mode */
+  --shadow-xs: 0 1px 2px 0 rgb(0 0 0 / 0.3);
+  --shadow-sm: 0 1px 3px 0 rgb(0 0 0 / 0.4), 0 1px 2px -1px rgb(0 0 0 / 0.4);
+  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.4), 0 2px 4px -2px rgb(0 0 0 / 0.4);
+  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.4), 0 4px 6px -4px rgb(0 0 0 / 0.4);
+  --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.4), 0 8px 10px -6px rgb(0 0 0 / 0.4);
+  --shadow-2xl: 0 25px 50px -12px rgb(0 0 0 / 0.5);
+}

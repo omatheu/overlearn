@@ -3,6 +3,8 @@ import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
 import { Provider } from 'jotai';
+import { ThemeProvider } from "@/lib/hooks/useTheme";
+import { QueryProvider } from "@/components/providers/query-provider";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -17,11 +19,15 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="pt-BR">
-      <body className={inter.className}>
-        <Provider>
-          {children}
-        </Provider>
+    <html lang="pt-BR" suppressHydrationWarning>
+      <body className={inter.className} suppressHydrationWarning>
+        <ThemeProvider>
+          <QueryProvider>
+            <Provider>
+              {children}
+            </Provider>
+          </QueryProvider>
+        </ThemeProvider>
       </body>
     </html>
   );

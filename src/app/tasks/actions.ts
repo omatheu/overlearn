@@ -10,6 +10,8 @@ export type TaskFormData = {
   status: 'todo' | 'doing' | 'done' | 'blocked';
   priority: 'low' | 'medium' | 'high' | 'urgent';
   conceptIds?: string[];
+  scheduledDate?: string;
+  estimatedTime?: number;
 };
 
 export async function createTask(data: TaskFormData) {
@@ -27,6 +29,8 @@ export async function createTask(data: TaskFormData) {
         description: data.description,
         status: data.status,
         priority: data.priority,
+        scheduledDate: data.scheduledDate ? new Date(data.scheduledDate) : null,
+        estimatedTime: data.estimatedTime,
         userProfileId: profile.id,
         concepts: data.conceptIds?.length ? {
           create: data.conceptIds.map((conceptId) => ({
@@ -68,6 +72,8 @@ export async function updateTask(id: string, data: TaskFormData) {
         description: data.description,
         status: data.status,
         priority: data.priority,
+        scheduledDate: data.scheduledDate ? new Date(data.scheduledDate) : null,
+        estimatedTime: data.estimatedTime,
         concepts: data.conceptIds?.length ? {
           create: data.conceptIds.map((conceptId) => ({
             concept: {

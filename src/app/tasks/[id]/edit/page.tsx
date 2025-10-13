@@ -4,6 +4,7 @@ import { TaskForm } from '@/components/tasks/task-form';
 import { ChevronLeft } from 'lucide-react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
+import { PageLayout, PageHeader } from '@/components/layout/page-layout';
 
 async function getTask(id: string) {
   const task = await prisma.task.findUnique({
@@ -49,15 +50,19 @@ export default async function EditTaskPage({
   }
 
   return (
-    <div className="container max-w-3xl py-8">
-      <div className="mb-6">
-        <Link href={`/tasks/${task.id}`}>
-          <Button variant="ghost" size="sm">
-            <ChevronLeft className="h-4 w-4 mr-1" />
-            Voltar para Task
-          </Button>
-        </Link>
-      </div>
+    <PageLayout maxWidth="2xl">
+      <PageHeader
+        title="Editar tarefa"
+        description="Atualize as informações da tarefa"
+        action={
+          <Link href={`/tasks/${task.id}`}>
+            <Button variant="outline" size="sm">
+              <ChevronLeft className="h-4 w-4 mr-1" />
+              Voltar
+            </Button>
+          </Link>
+        }
+      />
 
       <TaskForm
         task={task as {
@@ -70,6 +75,6 @@ export default async function EditTaskPage({
         }}
         concepts={concepts}
       />
-    </div>
+    </PageLayout>
   );
 }

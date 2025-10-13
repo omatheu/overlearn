@@ -1,0 +1,13 @@
+echo "🔍 Executando lint antes do commit..."
+
+# Executar lint
+npm run lint
+
+# Verificar se o lint passou
+if [ $? -ne 0 ]; then
+  echo "❌ Lint falhou! Commit cancelado."
+  echo "💡 Execute 'npm run lint' localmente para ver os erros."
+  exit 1
+fi
+
+echo "✅ Lint passou! Prosseguindo com o commit..."

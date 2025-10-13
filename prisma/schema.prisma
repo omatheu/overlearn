@@ -143,8 +143,10 @@ model Task {
   priority    String   @default("medium") // "low", "medium", "high", "urgent"
   
   // Datas
-  dueDate     DateTime?
-  completedAt DateTime?
+  dueDate       DateTime?
+  completedAt   DateTime?
+  scheduledDate DateTime? // Data/hora agendada para o calendário
+  estimatedTime Int?      // Tempo estimado em minutos
   
   // Relação com estudo
   studyGoalId String?

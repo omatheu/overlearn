@@ -29,6 +29,8 @@ type Task = {
   description: string | null;
   status: 'todo' | 'doing' | 'done' | 'blocked';
   priority: 'low' | 'medium' | 'high' | 'urgent';
+  scheduledDate?: Date | null;
+  estimatedTime?: number | null;
   concepts: {
     concept: Concept;
   }[];
@@ -50,6 +52,10 @@ export function TaskForm({ task, concepts }: TaskFormProps) {
     status: task?.status || 'todo',
     priority: task?.priority || 'medium',
     conceptIds: task?.concepts.map((c) => c.concept.id) || [],
+    scheduledDate: task?.scheduledDate
+      ? new Date(task.scheduledDate).toISOString().slice(0, 16)
+      : '',
+    estimatedTime: task?.estimatedTime || undefined,
   });
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -161,6 +167,45 @@ export function TaskForm({ task, concepts }: TaskFormProps) {
                   <SelectItem value="urgent">Urgente</SelectItem>
                 </SelectContent>
               </Select>
+            </div>
+          </div>
+
+          {/* Scheduling */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="scheduledDate">Data Agendada</Label>
+              <Input
+                id="scheduledDate"
+                type="datetime-local"
+                value={formData.scheduledDate || ''}
+                onChange={(e) =>
+                  setFormData({ ...formData, scheduledDate: e.target.value })
+                }
+              />
+              <p className="text-xs text-muted-foreground">
+                Agendar task no calendário
+              </p>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="estimatedTime">Tempo Estimado (min)</Label>
+              <Input
+                id="estimatedTime"
+                type="number"
+                min="0"
+                step="15"
+                value={formData.estimatedTime || ''}
+                onChange={(e) =>
+                  setFormData({
+                    ...formData,
+                    estimatedTime: e.target.value ? parseInt(e.target.value, 10) : undefined,
+                  })
+                }
+                placeholder="Ex: 60"
+              />
+              <p className="text-xs text-muted-foreground">
+                Duração estimada da task
+              </p>
             </div>
           </div>
 

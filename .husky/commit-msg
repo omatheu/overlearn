@@ -1,0 +1,16 @@
+echo "📝 Validando mensagem de commit..."
+
+# Verificar se a mensagem não está vazia
+if [ -z "$1" ]; then
+  echo "❌ Mensagem de commit não pode estar vazia!"
+  exit 1
+fi
+
+# Verificar se a mensagem tem pelo menos 10 caracteres
+if [ ${#1} -lt 10 ]; then
+  echo "❌ Mensagem de commit deve ter pelo menos 10 caracteres!"
+  echo "💡 Exemplo: 'feat: adicionar módulo calendar'"
+  exit 1
+fi
+
+echo "✅ Mensagem de commit válida!"

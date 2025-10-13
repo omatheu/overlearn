@@ -1,9 +1,13 @@
 import { Button } from '@/components/ui/button';
-import { Plus } from 'lucide-react';
+import { Plus, ListTodo } from 'lucide-react';
 import Link from 'next/link';
 import prisma from '@/lib/db/prisma';
 import { TaskCard } from '@/components/tasks/task-card';
 import { TaskFilters } from '@/components/tasks/task-filters';
+import { PageLayout, PageHeader, PageContent, Section } from '@/components/layout';
+import { Grid, Stack } from '@/components/layout';
+import { EmptyState } from '@/components/ui/empty-state';
+import { Card } from '@/components/ui/card';
 
 type SearchParams = {
   search?: string;
@@ -93,100 +97,102 @@ export default async function TasksPage({
   const params = await searchParams;
   const tasks = await getTasks(params);
 
+  const hasFilters = params.search || params.status || params.priority;
+
   return (
-    <div className="container max-w-6xl py-8">
-      {/* Header */}
-      <div className="flex justify-between items-center mb-8">
-        <div>
-          <h1 className="text-3xl font-bold mb-2">Tasks</h1>
-          <p className="text-muted-foreground">
-            Gerencie suas tarefas e acompanhe o progresso
-          </p>
-        </div>
-        <Link href="/tasks/new">
-          <Button>
-            <Plus className="h-4 w-4 mr-2" />
-            Nova Task
-          </Button>
-        </Link>
-      </div>
+    <PageLayout maxWidth="xl">
+      <PageHeader
+        title="Tasks"
+        description="Gerencie suas tarefas e acompanhe o progresso"
+        action={
+          <Link href="/tasks/new">
+            <Button>
+              <Plus className="h-4 w-4 mr-2" />
+              Nova Task
+            </Button>
+          </Link>
+        }
+      />
 
-      {/* Filters */}
-      <div className="mb-6">
-        <TaskFilters />
-      </div>
+      <PageContent>
+        {/* Filters */}
+        <Section>
+          <TaskFilters />
+        </Section>
 
-      {/* Task List */}
-      {tasks.length === 0 ? (
-        <div className="text-center py-12">
-          <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-muted mb-4">
-            <Plus className="h-8 w-8 text-muted-foreground" />
-          </div>
-          <h3 className="text-lg font-semibold mb-2">Nenhuma task encontrada</h3>
-          <p className="text-muted-foreground mb-4">
-            {params.search || params.status || params.priority
-              ? 'Tente ajustar os filtros de busca'
-              : 'Comece criando sua primeira task'}
-          </p>
-          {!params.search && !params.status && !params.priority && (
-            <Link href="/tasks/new">
-              <Button>
-                <Plus className="h-4 w-4 mr-2" />
-                Criar Primeira Task
-              </Button>
-            </Link>
+        {/* Task List */}
+        <Section>
+          {tasks.length === 0 ? (
+            <EmptyState
+              icon={ListTodo}
+              title={hasFilters ? "Nenhuma task encontrada" : "Nenhuma task criada"}
+              description={
+                hasFilters
+                  ? "Tente ajustar os filtros de busca"
+                  : "Comece criando sua primeira task e organize seu trabalho"
+              }
+            >
+              {!hasFilters && (
+                <Link href="/tasks/new">
+                  <Button className="mt-4">
+                    <Plus className="h-4 w-4 mr-2" />
+                    Criar Primeira Task
+                  </Button>
+                </Link>
+              )}
+            </EmptyState>
+          ) : (
+            <Stack direction="vertical" spacing={3}>
+              {tasks.map((task) => (
+                <TaskCard
+                  key={task.id}
+                  task={task as {
+                    id: string;
+                    title: string;
+                    description: string | null;
+                    status: 'todo' | 'doing' | 'done' | 'blocked';
+                    priority: 'low' | 'medium' | 'high' | 'urgent';
+                    createdAt: Date;
+                    concepts: { concept: { id: string; name: string } }[];
+                  }}
+                />
+              ))}
+            </Stack>
           )}
-        </div>
-      ) : (
-        <div className="space-y-3">
-          {tasks.map((task) => (
-            <TaskCard
-              key={task.id}
-              task={task as {
-                id: string;
-                title: string;
-                description: string | null;
-                status: 'todo' | 'doing' | 'done' | 'blocked';
-                priority: 'low' | 'medium' | 'high' | 'urgent';
-                createdAt: Date;
-                concepts: { concept: { id: string; name: string } }[];
-              }}
-            />
-          ))}
-        </div>
-      )}
+        </Section>
 
-      {/* Stats */}
-      {tasks.length > 0 && (
-        <div className="mt-8 pt-6 border-t">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
-            <div>
-              <div className="text-2xl font-bold">
-                {tasks.filter((t) => t.status === 'todo').length}
-              </div>
-              <div className="text-sm text-muted-foreground">A Fazer</div>
-            </div>
-            <div>
-              <div className="text-2xl font-bold text-blue-600">
-                {tasks.filter((t) => t.status === 'doing').length}
-              </div>
-              <div className="text-sm text-muted-foreground">Em Progresso</div>
-            </div>
-            <div>
-              <div className="text-2xl font-bold text-green-600">
-                {tasks.filter((t) => t.status === 'done').length}
-              </div>
-              <div className="text-sm text-muted-foreground">Concluídas</div>
-            </div>
-            <div>
-              <div className="text-2xl font-bold text-red-600">
-                {tasks.filter((t) => t.status === 'blocked').length}
-              </div>
-              <div className="text-sm text-muted-foreground">Bloqueadas</div>
-            </div>
-          </div>
-        </div>
-      )}
-    </div>
+        {/* Stats */}
+        {tasks.length > 0 && (
+          <Section title="Estatísticas">
+            <Grid cols={{ default: 2, md: 4 }} gap={4}>
+              <Card className="p-6 text-center">
+                <div className="text-3xl font-bold text-foreground mb-1">
+                  {tasks.filter((t) => t.status === 'todo').length}
+                </div>
+                <div className="text-sm text-muted-foreground">A Fazer</div>
+              </Card>
+              <Card className="p-6 text-center">
+                <div className="text-3xl font-bold text-blue-600 mb-1">
+                  {tasks.filter((t) => t.status === 'doing').length}
+                </div>
+                <div className="text-sm text-muted-foreground">Em Progresso</div>
+              </Card>
+              <Card className="p-6 text-center">
+                <div className="text-3xl font-bold text-green-600 mb-1">
+                  {tasks.filter((t) => t.status === 'done').length}
+                </div>
+                <div className="text-sm text-muted-foreground">Concluídas</div>
+              </Card>
+              <Card className="p-6 text-center">
+                <div className="text-3xl font-bold text-red-600 mb-1">
+                  {tasks.filter((t) => t.status === 'blocked').length}
+                </div>
+                <div className="text-sm text-muted-foreground">Bloqueadas</div>
+              </Card>
+            </Grid>
+          </Section>
+        )}
+      </PageContent>
+    </PageLayout>
   );
 }
