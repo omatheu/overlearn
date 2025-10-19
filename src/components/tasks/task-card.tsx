@@ -16,6 +16,7 @@ import {
 import { toggleTaskStatus, deleteTask } from '@/app/tasks/actions';
 import { useTransition } from 'react';
 import { useRouter } from 'next/navigation';
+import { GenerateFlashcardsButton } from './generate-flashcards-button';
 
 type Task = {
   id: string;
@@ -136,6 +137,10 @@ export function TaskCard({ task }: { task: Task }) {
                   Editar
                 </Link>
               </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <div className="px-2 py-1">
+                <GenerateFlashcardsButton task={task} />
+              </div>
               <DropdownMenuSeparator />
               <DropdownMenuItem
                 onClick={handleDelete}

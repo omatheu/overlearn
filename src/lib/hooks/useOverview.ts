@@ -64,7 +64,32 @@ async function fetchPendingFlashcards(): Promise<PendingFlashcard[]> {
   if (!response.ok) {
     throw new Error('Failed to fetch pending flashcards');
   }
-  return response.json();
+  const data = (await response.json()) as unknown as Array<{
+    id: string;
+    question: string;
+    answer: string;
+    nextReview: string | null;
+    easeFactor: number;
+    interval: number;
+    repetitions: number;
+    task?: { title: string } | null;
+    concept?: { name: string } | null;
+  }>;
+
+  const now = new Date();
+
+  return data.map((f) => ({
+    id: f.id,
+    question: f.question,
+    answer: f.answer,
+    nextReview: f.nextReview,
+    easeFactor: f.easeFactor,
+    interval: f.interval,
+    repetitions: f.repetitions,
+    task: f.task?.title,
+    concept: f.concept?.name,
+    isDue: !f.nextReview || new Date(f.nextReview) <= now,
+  }));
 }
 
 export function useOverview() {
