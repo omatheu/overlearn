@@ -21,6 +21,8 @@ export default function HomePage() {
                 width={32}
                 height={32}
                 priority
+                suppressHydrationWarning
+                style={{ color: 'transparent' }}
               />
             </div>
             <h1 className="text-2xl font-bold tracking-tight">OverLearn</h1>
