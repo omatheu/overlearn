@@ -1,13 +1,10 @@
 // src/app/layout.tsx
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
 import "./globals.css";
 import { Provider } from "jotai";
 import { ThemeProvider } from "@/lib/hooks/useTheme";
 import { QueryProvider } from "@/components/providers/query-provider";
 import { Header } from "@/components/layout/header";
-
-const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
   title: "OverLearn - Aprendizado Proativo",
@@ -21,7 +18,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="pt-BR" suppressHydrationWarning>
-      <body className={inter.className} suppressHydrationWarning>
+      <body className="font-sans antialiased" suppressHydrationWarning>
         <ThemeProvider>
           <QueryProvider>
             <Provider>

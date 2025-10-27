@@ -53,7 +53,7 @@ export function TaskCalendar() {
   };
 
   const renderCalendarDays = () => {
-    const days = [];
+    const days: React.ReactElement[] = [];
 
     // Empty cells for days before month starts
     for (let i = 0; i < startingDayOfWeek; i++) {

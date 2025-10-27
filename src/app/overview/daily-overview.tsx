@@ -6,6 +6,20 @@ import { Sparkles, BookOpen, Play, Plus, Target, Brain } from 'lucide-react';
 import Link from 'next/link';
 import prisma from '@/lib/db/prisma';
 
+type TaskWithConcepts = {
+  id: string;
+  title: string;
+  priority: string;
+  concepts: Array<{ concept: { name: string } }>;
+};
+
+type FlashcardWithRelations = {
+  id: string;
+  question: string;
+  task: { title: string } | null;
+  concept: { name: string } | null;
+};
+
 async function getDailyContext() {
   // Buscar dados do usuário
   const profile = await prisma.userProfile.findFirst();
@@ -152,7 +166,7 @@ export async function DailyOverview() {
             <div className="space-y-2">
               <h3 className="font-semibold text-sm">Prioridades de Hoje:</h3>
               <div className="space-y-2">
-                {pendingTasks.slice(0, 3).map(task => (
+                {pendingTasks.slice(0, 3).map((task: TaskWithConcepts) => (
                   <div key={task.id} className="flex items-center gap-2 text-sm">
                     <Badge variant={task.priority === 'high' ? 'destructive' : 'secondary'}>
                       {task.priority}
@@ -222,7 +236,7 @@ export async function DailyOverview() {
                 Próximos para revisar:
               </h3>
               <div className="space-y-2">
-                {pendingFlashcards.slice(0, 3).map(flashcard => (
+                {pendingFlashcards.slice(0, 3).map((flashcard: FlashcardWithRelations) => (
                   <div key={flashcard.id} className="flex items-center gap-2 text-sm p-2 bg-muted/50 rounded">
                     <Brain className="h-4 w-4 text-muted-foreground" />
                     <span className="flex-1 font-medium">{flashcard.question}</span>
