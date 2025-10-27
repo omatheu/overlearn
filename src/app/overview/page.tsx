@@ -1,24 +1,34 @@
 // src/app/overview/page.tsx
-'use client';
+"use client";
 
-import { useOverview } from '@/lib/hooks/useOverview';
-import { PageLayout, PageHeader } from '@/components/layout/page-layout';
-import { Section } from '@/components/layout/page-layout';
-import { Grid } from '@/components/layout/grid';
-import { StatCard } from '@/components/overview/stat-card';
-import { TodayTasks } from '@/components/overview/today-tasks';
-import { PendingFlashcards } from '@/components/overview/pending-flashcards';
-import { CheckSquare, Clock, Brain, Target, RefreshCw } from 'lucide-react';
+import { useOverview } from "@/lib/hooks/useOverview";
+import { PageLayout, PageHeader } from "@/components/layout/page-layout";
+import { Section } from "@/components/layout/page-layout";
+import { Grid } from "@/components/layout/grid";
+import { StatCard } from "@/components/overview/stat-card";
+import { TodayTasks } from "@/components/overview/today-tasks";
+import { PendingFlashcards } from "@/components/overview/pending-flashcards";
+import {
+  CheckSquare,
+  Clock,
+  Brain,
+  Target,
+  RefreshCw,
+  ListTodo,
+} from "lucide-react";
+import { Button } from "@/components/ui/button";
+import Link from "next/link";
 
 function getGreeting() {
   const hour = new Date().getHours();
-  if (hour < 12) return 'Bom dia';
-  if (hour < 18) return 'Boa tarde';
-  return 'Boa noite';
+  if (hour < 12) return "Bom dia";
+  if (hour < 18) return "Boa tarde";
+  return "Boa noite";
 }
 
 export default function OverviewPage() {
-  const { todayTasks, stats, flashcards, isLoading, refetchAll } = useOverview();
+  const { todayTasks, stats, flashcards, isLoading, refetchAll } =
+    useOverview();
 
   if (isLoading) {
     return (
@@ -51,13 +61,18 @@ export default function OverviewPage() {
         title={`${getGreeting()}! 👋`}
         description="Aqui está um resumo do seu progresso e atividades pendentes"
         action={
-          <button
-            onClick={() => refetchAll()}
-            className="inline-flex items-center gap-2 px-4 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors text-sm font-medium"
-          >
-            <RefreshCw className="h-4 w-4" />
-            Atualizar
-          </button>
+          <div className="flex items-center gap-2">
+            <Button asChild>
+              <Link href="/tasks">
+                <ListTodo className="h-4 w-4" />
+                Ver Tarefas
+              </Link>
+            </Button>
+            <Button variant="outline" onClick={() => refetchAll()}>
+              <RefreshCw className="h-4 w-4" />
+              Atualizar
+            </Button>
+          </div>
         }
       />
 
@@ -75,7 +90,7 @@ export default function OverviewPage() {
           />
           <StatCard
             title="Tempo de foco"
-            value={stats.data ? formatTime(stats.data.totalFocusTime) : '0min'}
+            value={stats.data ? formatTime(stats.data.totalFocusTime) : "0min"}
             subtitle={`${stats.data?.sessionCount ?? 0} sessões`}
             icon={Clock}
           />
@@ -93,7 +108,7 @@ export default function OverviewPage() {
         {/* Tarefas de hoje */}
         <Section
           title="Tarefas de hoje"
-          description={`${todayTasks.data.length} tarefa${todayTasks.data.length !== 1 ? 's' : ''} agendada${todayTasks.data.length !== 1 ? 's' : ''}`}
+          description={`${todayTasks.data.length} tarefa${todayTasks.data.length !== 1 ? "s" : ""} agendada${todayTasks.data.length !== 1 ? "s" : ""}`}
         >
           <TodayTasks tasks={todayTasks.data} />
         </Section>
@@ -101,7 +116,7 @@ export default function OverviewPage() {
         {/* Flashcards pendentes */}
         <Section
           title="Flashcards para revisar"
-          description={`${flashcards.data.length} card${flashcards.data.length !== 1 ? 's' : ''} pendente${flashcards.data.length !== 1 ? 's' : ''}`}
+          description={`${flashcards.data.length} card${flashcards.data.length !== 1 ? "s" : ""} pendente${flashcards.data.length !== 1 ? "s" : ""}`}
         >
           <PendingFlashcards flashcards={flashcards.data} />
         </Section>
@@ -118,9 +133,9 @@ export default function OverviewPage() {
               💡 Dica do dia
             </h3>
             <p className="text-sm text-primary-800 dark:text-primary-200">
-              Use a técnica Pomodoro para manter o foco: 25 minutos de trabalho concentrado
-              seguidos de 5 minutos de pausa. Isso ajuda a manter a produtividade sem
-              sobrecarregar o cérebro!
+              Use a técnica Pomodoro para manter o foco: 25 minutos de trabalho
+              concentrado seguidos de 5 minutos de pausa. Isso ajuda a manter a
+              produtividade sem sobrecarregar o cérebro!
             </p>
           </div>
         </div>

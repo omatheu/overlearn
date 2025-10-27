@@ -2,9 +2,10 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
-import { Provider } from 'jotai';
+import { Provider } from "jotai";
 import { ThemeProvider } from "@/lib/hooks/useTheme";
 import { QueryProvider } from "@/components/providers/query-provider";
+import { Header } from "@/components/layout/header";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -24,6 +25,7 @@ export default function RootLayout({
         <ThemeProvider>
           <QueryProvider>
             <Provider>
+              <Header />
               {children}
             </Provider>
           </QueryProvider>

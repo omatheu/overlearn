@@ -1,12 +1,12 @@
-'use client';
+"use client";
 
-import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Progress } from '@/components/ui/progress';
-import { Badge } from '@/components/ui/badge';
-import { RotateCcw, Trophy } from 'lucide-react';
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Progress } from "@/components/ui/progress";
+import { Badge } from "@/components/ui/badge";
+import { RotateCcw, Trophy, ArrowLeft } from "lucide-react";
 
 interface Flashcard {
   id: string;
@@ -41,12 +41,12 @@ export default function FlashcardReviewPage() {
   useEffect(() => {
     const fetchFlashcards = async () => {
       try {
-        const response = await fetch('/api/flashcards?filter=due');
-        if (!response.ok) throw new Error('Failed to fetch flashcards');
+        const response = await fetch("/api/flashcards?filter=due");
+        if (!response.ok) throw new Error("Failed to fetch flashcards");
         const data = await response.json();
         setFlashcards(data);
       } catch (err) {
-        setError(err instanceof Error ? err.message : 'Unknown error');
+        setError(err instanceof Error ? err.message : "Unknown error");
       } finally {
         setIsLoading(false);
       }
@@ -90,10 +90,13 @@ export default function FlashcardReviewPage() {
               Não há flashcards para revisar agora.
             </p>
             <div className="flex gap-3">
-              <Button onClick={() => router.push('/flashcards')}>
+              <Button onClick={() => router.push("/flashcards")}>
                 Ver Todos os Flashcards
               </Button>
-              <Button variant="outline" onClick={() => router.push('/overview')}>
+              <Button
+                variant="outline"
+                onClick={() => router.push("/overview")}
+              >
                 Voltar ao Overview
               </Button>
             </div>
@@ -110,23 +113,23 @@ export default function FlashcardReviewPage() {
     setIsReviewing(true);
     try {
       const response = await fetch(`/api/flashcards/${current.id}/review`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ quality, timeSpent: 30 })
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ quality, timeSpent: 30 }),
       });
-      
-      if (!response.ok) throw new Error('Failed to review flashcard');
-      
+
+      if (!response.ok) throw new Error("Failed to review flashcard");
+
       // Próximo card ou finalizar
       if (currentIndex < flashcards.length - 1) {
-        setCurrentIndex(i => i + 1);
+        setCurrentIndex((i) => i + 1);
         setShowAnswer(false);
       } else {
         // Finalizou todos!
-        router.push('/overview');
+        router.push("/overview");
       }
     } catch (error) {
-      console.error('Erro ao revisar:', error);
+      console.error("Erro ao revisar:", error);
     } finally {
       setIsReviewing(false);
     }
@@ -136,12 +139,23 @@ export default function FlashcardReviewPage() {
     <div className="container max-w-3xl mx-auto p-6 space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between">
-        <h1 className="text-3xl font-bold">Revisão de Flashcards</h1>
+        <div>
+          <h1 className="text-3xl font-bold">Revisão de Flashcards</h1>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => router.back()}
+            className="mt-2"
+          >
+            <ArrowLeft className="h-4 w-4 mr-2" />
+            Voltar
+          </Button>
+        </div>
         <Badge variant="secondary">
           {currentIndex + 1} / {flashcards.length}
         </Badge>
       </div>
-      
+
       {/* Progress bar */}
       <div className="space-y-2">
         <div className="flex justify-between text-sm text-muted-foreground">
@@ -150,12 +164,12 @@ export default function FlashcardReviewPage() {
         </div>
         <Progress value={progress} className="h-2" />
       </div>
-      
+
       {/* Flashcard */}
       <Card className="min-h-[400px] border-2">
         <CardHeader>
           <CardTitle className="text-center text-sm text-muted-foreground">
-            {showAnswer ? '💡 Resposta' : '❓ Pergunta'}
+            {showAnswer ? "💡 Resposta" : "❓ Pergunta"}
           </CardTitle>
         </CardHeader>
         <CardContent className="flex flex-col items-center justify-center px-12 pb-12">
@@ -163,7 +177,7 @@ export default function FlashcardReviewPage() {
           <div className="text-center text-2xl font-medium mb-12 max-w-2xl leading-relaxed">
             {showAnswer ? current.answer : current.question}
           </div>
-          
+
           {/* Botões de ação */}
           {!showAnswer ? (
             <Button
@@ -179,7 +193,7 @@ export default function FlashcardReviewPage() {
               <p className="text-sm text-center text-muted-foreground mb-6">
                 Como foi sua resposta?
               </p>
-              
+
               <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                 <Button
                   variant="outline"
@@ -189,9 +203,11 @@ export default function FlashcardReviewPage() {
                 >
                   <span className="text-2xl">😰</span>
                   <span className="text-sm font-medium">Não lembrei</span>
-                  <span className="text-xs text-muted-foreground">Reiniciar</span>
+                  <span className="text-xs text-muted-foreground">
+                    Reiniciar
+                  </span>
                 </Button>
-                
+
                 <Button
                   variant="outline"
                   onClick={() => handleQuality(3)}
@@ -202,7 +218,7 @@ export default function FlashcardReviewPage() {
                   <span className="text-sm font-medium">Difícil</span>
                   <span className="text-xs text-muted-foreground">1 dia</span>
                 </Button>
-                
+
                 <Button
                   variant="outline"
                   onClick={() => handleQuality(4)}
@@ -213,7 +229,7 @@ export default function FlashcardReviewPage() {
                   <span className="text-sm font-medium">Bom</span>
                   <span className="text-xs text-muted-foreground">6 dias</span>
                 </Button>
-                
+
                 <Button
                   variant="outline"
                   onClick={() => handleQuality(5)}
@@ -222,14 +238,16 @@ export default function FlashcardReviewPage() {
                 >
                   <span className="text-2xl">🎯</span>
                   <span className="text-sm font-medium">Fácil</span>
-                  <span className="text-xs text-muted-foreground">Mais tempo</span>
+                  <span className="text-xs text-muted-foreground">
+                    Mais tempo
+                  </span>
                 </Button>
               </div>
             </div>
           )}
         </CardContent>
       </Card>
-      
+
       {/* Info do flashcard */}
       {current.task && (
         <Card className="border-dashed">
@@ -243,7 +261,9 @@ export default function FlashcardReviewPage() {
                 <div>
                   <span className="text-muted-foreground">Conceitos: </span>
                   <span className="font-medium">
-                    {current.task.concepts.map((c: { concept: { name: string } }) => c.concept.name).join(', ')}
+                    {current.task.concepts
+                      .map((c: { concept: { name: string } }) => c.concept.name)
+                      .join(", ")}
                   </span>
                 </div>
               )}
