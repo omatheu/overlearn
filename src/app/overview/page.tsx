@@ -8,6 +8,7 @@ import { Grid } from "@/components/layout/grid";
 import { StatCard } from "@/components/overview/stat-card";
 import { TodayTasks } from "@/components/overview/today-tasks";
 import { PendingFlashcards } from "@/components/overview/pending-flashcards";
+import { PomodoroTimer } from "@/components/productivity/pomodoro-timer";
 import {
   CheckSquare,
   Clock,
@@ -101,6 +102,14 @@ export default function OverviewPage() {
             icon={Target}
           />
         </Grid>
+      </Section>
+
+      {/* Timer Pomodoro */}
+      <Section
+        title="Timer Pomodoro"
+        description="Use a técnica Pomodoro para manter o foco e a produtividade"
+      >
+        <PomodoroTimer />
       </Section>
 
       {/* Grid de 2 colunas para tasks e flashcards */}
