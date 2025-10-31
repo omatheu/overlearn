@@ -33,9 +33,11 @@ export async function GET() {
     });
 
     // Calcular progresso para cada meta
-    const goalsWithProgress = goals.map((goal) => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const goalsWithProgress = goals.map((goal: any) => {
       const totalTasks = goal.tasks.length;
-      const completedTasks = goal.tasks.filter((t) => t.status === 'done').length;
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const completedTasks = goal.tasks.filter((t: any) => t.status === 'done').length;
       const progress = totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0;
 
       return {

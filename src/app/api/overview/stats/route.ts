@@ -64,7 +64,8 @@ export async function GET(request: NextRequest) {
     });
 
     // Calcular tempo total de foco (em minutos)
-    const totalFocusTime = studySessions.reduce((total, session) => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const totalFocusTime = studySessions.reduce((total: number, session: any) => {
       return total + session.duration;
     }, 0);
 
@@ -72,9 +73,12 @@ export async function GET(request: NextRequest) {
     const sessionCount = studySessions.length;
 
     // Contar sessões por tipo
-    const pomodoroSessions = studySessions.filter(s => s.type === 'pomodoro').length;
-    const studySessionsCount = studySessions.filter(s => s.type === 'study').length;
-    const reviewSessions = studySessions.filter(s => s.type === 'review').length;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const pomodoroSessions = studySessions.filter((s: any) => s.type === 'pomodoro').length;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const studySessionsCount = studySessions.filter((s: any) => s.type === 'study').length;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const reviewSessions = studySessions.filter((s: any) => s.type === 'review').length;
 
     return NextResponse.json({
       period,

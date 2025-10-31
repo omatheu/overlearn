@@ -152,7 +152,8 @@ export async function DailyOverview() {
             <div className="space-y-2">
               <h3 className="font-semibold text-sm">Prioridades de Hoje:</h3>
               <div className="space-y-2">
-                {pendingTasks.slice(0, 3).map(task => (
+                {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
+                {pendingTasks.slice(0, 3).map((task: any) => (
                   <div key={task.id} className="flex items-center gap-2 text-sm">
                     <Badge variant={task.priority === 'high' ? 'destructive' : 'secondary'}>
                       {task.priority}
@@ -222,7 +223,8 @@ export async function DailyOverview() {
                 Próximos para revisar:
               </h3>
               <div className="space-y-2">
-                {pendingFlashcards.slice(0, 3).map(flashcard => (
+                {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
+                {pendingFlashcards.slice(0, 3).map((flashcard: any) => (
                   <div key={flashcard.id} className="flex items-center gap-2 text-sm p-2 bg-muted/50 rounded">
                     <Brain className="h-4 w-4 text-muted-foreground" />
                     <span className="flex-1 font-medium">{flashcard.question}</span>

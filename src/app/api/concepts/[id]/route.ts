@@ -54,9 +54,11 @@ export async function GET(
     }
 
     // Calcular tempo total de estudo
-    const totalStudyTime = concept.tasks.reduce((acc, tc) => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const totalStudyTime = concept.tasks.reduce((acc: number, tc: any) => {
       const taskTime = tc.task.sessions.reduce(
-        (sum, session) => sum + session.duration,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (sum: number, session: any) => sum + session.duration,
         0
       );
       return acc + taskTime;

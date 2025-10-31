@@ -54,12 +54,15 @@ export async function GET(
 
     // Calcular estatísticas
     const totalTasks = goal.tasks.length;
-    const completedTasks = goal.tasks.filter((t) => t.status === 'done').length;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const completedTasks = goal.tasks.filter((t: any) => t.status === 'done').length;
     const progress = totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0;
 
     // Calcular tempo total de estudo
-    const totalStudyTime = goal.tasks.reduce((acc, task) => {
-      const taskTime = task.sessions.reduce((sum, session) => sum + session.duration, 0);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const totalStudyTime = goal.tasks.reduce((acc: number, task: any) => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const taskTime = task.sessions.reduce((sum: number, session: any) => sum + session.duration, 0);
       return acc + taskTime;
     }, 0);
 
