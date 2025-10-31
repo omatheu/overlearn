@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { TaskStatusBadge } from '@/components/tasks/task-status-badge';
 import { DeleteButton } from '@/components/tasks/delete-button';
+import { GenerateFlashcardsDialog } from '@/components/flashcards/generate-flashcards-dialog';
 import { ChevronLeft, Pencil, Clock, Calendar, Tag } from 'lucide-react';
 import Link from 'next/link';
 import { deleteTaskAction } from '@/app/tasks/actions';
@@ -63,6 +64,11 @@ export default async function TaskDetailPage({
           </Link>
 
           <Stack direction="horizontal" spacing={2}>
+            <GenerateFlashcardsDialog
+              taskId={task.id}
+              defaultTopic={task.title}
+            />
+
             <Link href={`/tasks/${task.id}/edit`}>
               <Button variant="outline" size="sm">
                 <Pencil className="h-4 w-4 mr-2" />
