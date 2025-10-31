@@ -4,7 +4,7 @@
 
 ## 📊 Status Geral do Projeto
 
-**Progresso Total**: ~45% → 65% (meta atual: 100%)
+**Progresso Total**: ~45% → 95% ✅
 
 ---
 
@@ -102,7 +102,7 @@
 
 ---
 
-### 7. Metas de Estudo (StudyGoals) (⏳ 70%)
+### 7. Metas de Estudo (StudyGoals) (✅ 100%)
 - ✅ API endpoints (GET, POST, PUT, DELETE)
 - ✅ Custom hooks (useGoals)
 - ✅ Componente GoalCard
