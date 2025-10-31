@@ -2,6 +2,18 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/db/prisma';
 
+type TaskWithRelations = {
+  id: string;
+  title: string;
+  description: string | null;
+  status: string;
+  priority: string;
+  scheduledDate: Date | null;
+  estimatedTime: number | null;
+  studyGoal: { title: string } | null;
+  concepts: Array<{ concept: { name: string } }>;
+};
+
 export async function GET() {
   try {
     const now = new Date();
@@ -42,7 +54,7 @@ export async function GET() {
     });
 
     // Formatar resposta
-    const formattedTasks = todayTasks.map(task => ({
+    const formattedTasks = todayTasks.map((task: TaskWithRelations) => ({
       id: task.id,
       title: task.title,
       description: task.description,
@@ -51,7 +63,7 @@ export async function GET() {
       scheduledDate: task.scheduledDate,
       estimatedTime: task.estimatedTime,
       studyGoal: task.studyGoal?.title,
-      concepts: task.concepts.map(tc => tc.concept.name),
+      concepts: task.concepts.map((tc: { concept: { name: string } }) => tc.concept.name),
     }));
 
     return NextResponse.json(formattedTasks);

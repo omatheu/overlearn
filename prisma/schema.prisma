@@ -134,36 +134,43 @@ model Task {
   id          String   @id @default(cuid())
   title       String
   description String?
-  
+
   // Tipo de task
   type        String   @default("work") // "work", "study", "personal"
-  
+
   // Status
   status      String   @default("todo") // "todo", "doing", "done", "blocked"
   priority    String   @default("medium") // "low", "medium", "high", "urgent"
-  
+
   // Datas
   dueDate       DateTime?
   completedAt   DateTime?
   scheduledDate DateTime? // Data/hora agendada para o calendário
   estimatedTime Int?      // Tempo estimado em minutos
-  
+
   // Relação com estudo
   studyGoalId String?
   studyGoal   StudyGoal? @relation(fields: [studyGoalId], references: [id], onDelete: SetNull)
-  
+
   // Relação com usuário
   userProfileId String
   userProfile   UserProfile @relation(fields: [userProfileId], references: [id], onDelete: Cascade)
-  
+
   // Relacionamentos
   concepts      TaskConcept[]
   flashcards    Flashcard[]
   sessions      StudySession[]
   notes         Note[]
-  
+
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+
+  @@index([status])
+  @@index([priority])
+  @@index([scheduledDate])
+  @@index([userProfileId])
+  @@index([dueDate])
+  @@index([type])
 }
 
 // ============================================
@@ -196,27 +203,32 @@ model Flashcard {
   id         String    @id @default(cuid())
   question   String
   answer     String
-  
+
   // Origem
   source     String    @default("manual") // "manual", "ai_generated"
-  
+
   // Repetição espaçada (algoritmo SM-2)
   easeFactor Float     @default(2.5)
   interval   Int       @default(1) // dias
   repetitions Int      @default(0)
   nextReview DateTime?
-  
+
   // Relacionamentos
   taskId     String?
   task       Task?     @relation(fields: [taskId], references: [id], onDelete: SetNull)
-  
+
   conceptId  String?
   concept    Concept?  @relation(fields: [conceptId], references: [id], onDelete: SetNull)
-  
+
   reviews    FlashcardReview[]
-  
+
   createdAt  DateTime  @default(now())
   updatedAt  DateTime  @updatedAt
+
+  @@index([nextReview])
+  @@index([taskId])
+  @@index([conceptId])
+  @@index([easeFactor])
 }
 
 // ============================================
@@ -241,25 +253,30 @@ model FlashcardReview {
 
 model StudySession {
   id          String   @id @default(cuid())
-  
+
   // Tipo de sessão
   type        String   // "study", "work", "review", "break"
-  
+
   // Duração
   duration    Int      // minutos
-  
+
   // Relacionamentos
   taskId      String?
   task        Task?    @relation(fields: [taskId], references: [id], onDelete: SetNull)
-  
+
   userProfileId String
   userProfile   UserProfile @relation(fields: [userProfileId], references: [id], onDelete: Cascade)
-  
+
   // Metadados
   notes       String?
   focusScore  Int?     // 1-10 (auto-avaliação de foco)
-  
+
   createdAt   DateTime @default(now())
+
+  @@index([createdAt])
+  @@index([type])
+  @@index([userProfileId])
+  @@index([taskId])
 }
 
 // ============================================

@@ -5,6 +5,18 @@ import { CheckCircle2, Circle, Clock } from 'lucide-react';
 import prisma from '@/lib/db/prisma';
 import Link from 'next/link';
 
+type TaskWithConcepts = {
+  id: string;
+  title: string;
+  description: string | null;
+  status: string;
+  priority: string;
+  concepts: Array<{
+    id: string;
+    concept: { name: string };
+  }>;
+};
+
 async function getRecentTasks() {
   const profile = await prisma.userProfile.findFirst();
   
@@ -77,7 +89,7 @@ export async function RecentTasks() {
       </CardHeader>
       <CardContent>
         <div className="space-y-3">
-          {tasks.map((task) => {
+          {tasks.map((task: TaskWithConcepts) => {
             const StatusIcon = statusIcons[task.status as keyof typeof statusIcons];
             const statusColor = statusColors[task.status as keyof typeof statusColors];
 

@@ -33,8 +33,8 @@ export class FlashcardGenerator implements IFlashcardGenerator {
       const prompt = this.buildPrompt(request);
       
       // Chamar API do Gemini (usar modelos '-latest' compatíveis com v1beta)
-      const model = this.genAI.getGenerativeModel({ 
-        model: this.model === 'flash' ? 'gemini-2.5-flash' : 'gemini-2.5-flash' 
+      const model = this.genAI.getGenerativeModel({
+        model: this.model === 'flash' ? 'gemini-2.5-flash' : 'gemini-2.0-pro'
       });
       
       const result = await model.generateContent(prompt);

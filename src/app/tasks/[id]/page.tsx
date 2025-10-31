@@ -46,7 +46,7 @@ export default async function TaskDetailPage({
   }
 
   const totalStudyTime = task.sessions.reduce(
-    (acc, session) => acc + session.duration,
+    (acc: number, session: { duration: number }) => acc + session.duration,
     0
   );
 
@@ -136,7 +136,7 @@ export default async function TaskDetailPage({
                     <h3 className="font-semibold">Conceitos Relacionados</h3>
                   </div>
                   <div className="flex flex-wrap gap-2">
-                    {task.concepts.map((tc) => (
+                    {task.concepts.map((tc: { concept: { id: string; name: string } }) => (
                       <Badge key={tc.concept.id} variant="outline">
                         {tc.concept.name}
                       </Badge>
@@ -161,7 +161,7 @@ export default async function TaskDetailPage({
                 </div>
 
                 <Stack direction="vertical" spacing={2}>
-                  {task.sessions.map((session) => (
+                  {task.sessions.map((session: { id: string; type: string; duration: number; createdAt: Date }) => (
                     <div
                       key={session.id}
                       className="flex justify-between items-center p-3 rounded-lg border hover:bg-accent/50 transition-colors"

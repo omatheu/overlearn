@@ -64,7 +64,7 @@ export async function GET(request: NextRequest) {
     });
 
     // Calcular tempo total de foco (em minutos)
-    const totalFocusTime = studySessions.reduce((total, session) => {
+    const totalFocusTime = studySessions.reduce((total: number, session: { duration: number; type: string }) => {
       return total + session.duration;
     }, 0);
 
@@ -72,9 +72,9 @@ export async function GET(request: NextRequest) {
     const sessionCount = studySessions.length;
 
     // Contar sessões por tipo
-    const pomodoroSessions = studySessions.filter(s => s.type === 'pomodoro').length;
-    const studySessionsCount = studySessions.filter(s => s.type === 'study').length;
-    const reviewSessions = studySessions.filter(s => s.type === 'review').length;
+    const pomodoroSessions = studySessions.filter((s: { duration: number; type: string }) => s.type === 'pomodoro').length;
+    const studySessionsCount = studySessions.filter((s: { duration: number; type: string }) => s.type === 'study').length;
+    const reviewSessions = studySessions.filter((s: { duration: number; type: string }) => s.type === 'review').length;
 
     return NextResponse.json({
       period,

@@ -16,6 +16,12 @@ type SearchParams = {
   sort?: string;
 };
 
+type TaskWithConcepts = {
+  id: string;
+  priority: string;
+  [key: string]: unknown;
+};
+
 async function getTasks(params: SearchParams) {
   const profile = await prisma.userProfile.findFirst();
 
@@ -66,7 +72,7 @@ async function getTasks(params: SearchParams) {
         }
       });
 
-      return tasks.sort((a, b) => {
+      return tasks.sort((a: TaskWithConcepts, b: TaskWithConcepts) => {
         const orderA = priorityOrder[a.priority as keyof typeof priorityOrder];
         const orderB = priorityOrder[b.priority as keyof typeof priorityOrder];
         return order === 'asc' ? orderA - orderB : orderB - orderA;
@@ -143,7 +149,7 @@ export default async function TasksPage({
             </EmptyState>
           ) : (
             <Stack direction="vertical" spacing={3}>
-              {tasks.map((task) => (
+              {tasks.map((task: TaskWithConcepts) => (
                 <TaskCard
                   key={task.id}
                   task={task as {
