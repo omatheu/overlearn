@@ -9,8 +9,10 @@ import { EmptyState } from "@/components/ui/empty-state";
 import { useConcepts } from "@/lib/hooks/useConcepts";
 import { Plus, Search, Loader2, BookOpen } from "lucide-react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 export default function ConceptsPage() {
+  const router = useRouter();
   const { data: concepts, isLoading, error } = useConcepts();
   const [searchQuery, setSearchQuery] = useState("");
 
@@ -96,14 +98,11 @@ export default function ConceptsPage() {
             icon={BookOpen}
             title="Nenhum conceito cadastrado"
             description="Comece criando seu primeiro conceito de estudo"
-            action={
-              <Link href="/concepts/new">
-                <Button>
-                  <Plus className="h-4 w-4 mr-2" />
-                  Criar Primeiro Conceito
-                </Button>
-              </Link>
-            }
+            action={{
+              label: "Criar Primeiro Conceito",
+              onClick: () => router.push("/concepts/new"),
+              icon: Plus
+            }}
           />
         )}
       </PageContent>

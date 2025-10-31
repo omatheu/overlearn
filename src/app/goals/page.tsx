@@ -9,8 +9,10 @@ import { EmptyState } from "@/components/ui/empty-state";
 import { useGoals } from "@/lib/hooks/useGoals";
 import { Plus, Loader2, Target } from "lucide-react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 export default function GoalsPage() {
+  const router = useRouter();
   const { data: goals, isLoading, error } = useGoals();
   const [statusFilter, setStatusFilter] = useState<string>("all");
 
@@ -85,15 +87,12 @@ export default function GoalsPage() {
           <EmptyState
             icon={Target}
             title="Nenhuma meta encontrada"
-            description="Comece criando sua primeira meta de estudo"
-            action={
-              <Link href="/goals/new">
-                <Button>
-                  <Plus className="h-4 w-4 mr-2" />
-                  Criar Primeira Meta
-                </Button>
-              </Link>
-            }
+            description={statusFilter === "all" ? "Comece criando sua primeira meta de estudo" : `Nenhuma meta ${statusFilter === "active" ? "ativa" : statusFilter === "completed" ? "concluída" : "pausada"} encontrada`}
+            action={statusFilter === "all" ? {
+              label: "Criar Primeira Meta",
+              onClick: () => router.push("/goals/new"),
+              icon: Plus
+            } : undefined}
           />
         )}
       </PageContent>
