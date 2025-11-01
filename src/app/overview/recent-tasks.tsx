@@ -5,6 +5,18 @@ import { CheckCircle2, Circle, Clock } from 'lucide-react';
 import prisma from '@/lib/db/prisma';
 import Link from 'next/link';
 
+type TaskWithConcepts = {
+  id: string;
+  title: string;
+  description: string | null;
+  status: string;
+  priority: string;
+  concepts: Array<{
+    id: string;
+    concept: { name: string };
+  }>;
+};
+
 async function getRecentTasks() {
   const profile = await prisma.userProfile.findFirst();
   

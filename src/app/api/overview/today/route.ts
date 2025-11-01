@@ -2,6 +2,18 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/db/prisma';
 
+type TaskWithRelations = {
+  id: string;
+  title: string;
+  description: string | null;
+  status: string;
+  priority: string;
+  scheduledDate: Date | null;
+  estimatedTime: number | null;
+  studyGoal: { title: string } | null;
+  concepts: Array<{ concept: { name: string } }>;
+};
+
 export async function GET() {
   try {
     const now = new Date();

@@ -16,6 +16,12 @@ type SearchParams = {
   sort?: string;
 };
 
+type TaskWithConcepts = {
+  id: string;
+  priority: string;
+  [key: string]: unknown;
+};
+
 async function getTasks(params: SearchParams) {
   const profile = await prisma.userProfile.findFirst();
 

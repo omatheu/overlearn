@@ -6,6 +6,20 @@ import { Sparkles, BookOpen, Play, Plus, Target, Brain } from 'lucide-react';
 import Link from 'next/link';
 import prisma from '@/lib/db/prisma';
 
+type TaskWithConcepts = {
+  id: string;
+  title: string;
+  priority: string;
+  concepts: Array<{ concept: { name: string } }>;
+};
+
+type FlashcardWithRelations = {
+  id: string;
+  question: string;
+  task: { title: string } | null;
+  concept: { name: string } | null;
+};
+
 async function getDailyContext() {
   // Buscar dados do usuário
   const profile = await prisma.userProfile.findFirst();
