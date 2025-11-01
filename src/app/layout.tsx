@@ -18,7 +18,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="pt-BR" suppressHydrationWarning>
-      <body className="font-sans antialiased" suppressHydrationWarning>
+      <body suppressHydrationWarning>
         <ThemeProvider>
           <QueryProvider>
             <Provider>
