@@ -1,10 +1,10 @@
 # OverLearn - Checklist de Implementação
 
-> Última atualização: 2025-10-31
+> Última atualização: 2025-11-02
 
 ## 📊 Status Geral do Projeto
 
-**Progresso Total**: ~45% → 95% ✅
+**Progresso Total**: ~45% → 95% → **98%** ✅
 
 ---
 
@@ -31,7 +31,8 @@
 - ✅ Histórico de revisões (FlashcardReview)
 - ✅ Filtros (todos/vencidos)
 - ✅ Estatísticas (total, vencidos, bem conhecidos, ease factor médio)
-- ✅ Vinculação com tarefas e conceitos
+- ✅ **Vinculação OPCIONAL com tarefas e conceitos** (atualizado 2025-11-02)
+- ✅ **Criação de flashcards sem vinculação obrigatória**
 - ✅ APIs: GET, POST, PUT, DELETE, POST review
 
 **Arquivos**: `src/app/flashcards/`, `src/components/flashcards/`, `src/app/api/flashcards/`
@@ -46,20 +47,36 @@
 - ✅ Botão na página de tasks
 - ✅ Validação e tratamento de erros
 - ✅ Estimativa de custos
+- ✅ **Geração de Conceitos com IA a partir de flashcards** (novo 2025-11-02)
+  - ✅ Análise automática de conteúdo
+  - ✅ Extração de 2-5 conceitos técnicos relevantes
+  - ✅ Categorização automática (frontend/backend/database/etc)
+  - ✅ Detecção de conceitos duplicados
+  - ✅ Seleção de conceitos para criar
+  - ✅ API: POST `/api/ai/concepts/generate`
 
-**Arquivos**: `src/components/flashcards/generate-flashcards-dialog.tsx`, `src/app/api/ai/flashcards/`
+**Arquivos**: `src/components/flashcards/generate-flashcards-dialog.tsx`, `src/app/api/ai/flashcards/`, `src/app/api/ai/concepts/generate/`
 
 ---
 
-### 4. Dashboard/Overview (90%)
+### 4. Dashboard/Overview (95%)
 - ✅ Visão geral diária
 - ✅ Estatísticas de ontem (tarefas, tempo de foco, sessões)
 - ✅ Tarefas de hoje
 - ✅ Flashcards pendentes
 - ✅ Ações rápidas
+- ✅ **Timer Pomodoro integrado** (atualizado 2025-11-02)
+  - ✅ Vinculação opcional com tarefas
+  - ✅ Seleção de tarefa antes de iniciar
+  - ✅ Auto-link da sessão com tarefa selecionada
+- ✅ **Widget de Notas Rápidas** (novo 2025-11-02)
+  - ✅ Criação rápida de notas
+  - ✅ Modo simples e avançado
+  - ✅ Suporte a tags e tarefas
+  - ✅ Exibição das 3 notas mais recentes
 - ⚠️ Analytics avançado (pendente)
 
-**Arquivos**: `src/app/overview/`, `src/components/overview/`, `src/app/api/overview/`
+**Arquivos**: `src/app/overview/`, `src/components/overview/`, `src/app/api/overview/`, `src/components/productivity/pomodoro-timer.tsx`, `src/components/notes/quick-note.tsx`
 
 ---
 
@@ -80,9 +97,89 @@
 
 ---
 
+### 6. Sistema de Notas com Tags (✅ 100%) **NOVO 2025-11-02**
+- ✅ API endpoints (CRUD Notes e Tags)
+  - ✅ GET `/api/notes` - Listar todas as notas
+  - ✅ POST `/api/notes` - Criar nota
+  - ✅ GET `/api/notes/[id]` - Buscar nota específica
+  - ✅ PATCH `/api/notes/[id]` - Editar nota
+  - ✅ DELETE `/api/notes/[id]` - Deletar nota
+  - ✅ GET `/api/tags` - Listar tags
+  - ✅ POST `/api/tags` - Criar tag
+- ✅ Página dedicada `/notes`
+  - ✅ Listagem de todas as notas
+  - ✅ Busca por título/conteúdo (real-time)
+  - ✅ Filtro por tags
+  - ✅ Visualização de notas com formatação monospace (suporte a código)
+  - ✅ Exibição de tags com cores
+  - ✅ Exibição de tarefas vinculadas
+  - ✅ Timestamps formatados (Hoje, Ontem, data)
+- ✅ CRUD completo de notas
+  - ✅ Criação com título, conteúdo, tags e tarefa
+  - ✅ Edição completa (todos os campos)
+  - ✅ Exclusão com confirmação
+  - ✅ Gerenciamento de tags durante edição
+- ✅ Widget de Nota Rápida (Overview)
+  - ✅ Modo simples: apenas conteúdo
+  - ✅ Modo avançado: título, tags, tarefa
+  - ✅ Criação de tags on-the-fly
+  - ✅ Exibição das 3 notas mais recentes
+- ✅ Sistema de Tags
+  - ✅ Criação com cores automáticas
+  - ✅ Seleção múltipla
+  - ✅ Filtro por tag (clique na tag)
+  - ✅ Gerenciamento visual
+- ✅ Vinculação com tarefas (opcional)
+- ✅ Custom hooks (useNotes, useTags, useCreateNote, useUpdateNote, useDeleteNote)
+- ✅ Link no header de navegação
+
+**Status**: 100% Completo e Funcional
+
+**Arquivos**:
+- `src/app/notes/page.tsx`
+- `src/app/api/notes/route.ts`
+- `src/app/api/notes/[id]/route.ts`
+- `src/app/api/tags/route.ts`
+- `src/components/notes/quick-note.tsx`
+- `src/lib/hooks/useNotes.ts`
+- `src/lib/hooks/useTags.ts`
+
+---
+
+### 7. Timer Pomodoro e Sessões de Estudo (✅ 100%) **ATUALIZADO 2025-11-02**
+- ✅ Timer visual funcional
+- ✅ Iniciar/pausar/retomar sessão
+- ✅ Modos: Trabalho e Intervalo
+- ✅ Tipos de sessão (study/work/review)
+- ✅ **Vinculação opcional com tarefas** (novo)
+  - ✅ Dropdown para selecionar tarefa antes de iniciar
+  - ✅ Filtragem automática de tarefas ativas
+  - ✅ Exibição de descrição da tarefa
+  - ✅ Auto-link da sessão com tarefa ao finalizar
+- ✅ Registro de sessão ao finalizar
+  - ✅ Duração registrada
+  - ✅ Task ID vinculado (se selecionado)
+  - ✅ Focus score (1-10)
+  - ✅ Notas opcionais
+- ✅ Dialog de salvamento ao completar
+  - ✅ Exibição da tarefa vinculada
+  - ✅ Configuração de tipo, foco e notas
+- ✅ API de sessões (POST, GET)
+- ✅ Integração com perfil (Pomodoro settings)
+- ✅ Componente no Overview
+
+**Status**: 100% Completo e Funcional
+
+**Arquivos**:
+- `src/components/productivity/pomodoro-timer.tsx`
+- `src/app/api/sessions/route.ts`
+- `src/lib/hooks/useSessions.ts`
+
+---
+
 ## 🚧 Em Implementação
 
-### 6. Gerenciamento de Conceitos (✅ 100%)
+### 8. Gerenciamento de Conceitos (✅ 100%)
 - ✅ API endpoints (GET, POST, PUT, DELETE)
 - ✅ CRUD completo
 - ✅ Página de listagem com busca
@@ -102,81 +199,55 @@
 
 ---
 
-### 7. Metas de Estudo (StudyGoals) (✅ 100%)
+### 9. Metas de Estudo (StudyGoals) (✅ 100%)
 - ✅ API endpoints (GET, POST, PUT, DELETE)
 - ✅ Custom hooks (useGoals)
 - ✅ Componente GoalCard
-- ⏳ Página de listagem com cards (em andamento)
-- ⏳ Filtro por status (active/completed/paused)
-- ⏳ Progress bar baseado em tasks/conceitos
-- ⏳ Página de criação/edição
-- ⏳ Página de detalhes
-  - ⏳ Tarefas relacionadas
-  - ⏳ Conceitos relacionados
-  - ⏳ Tempo total investido
-  - ⏳ Estatísticas de progresso
+- ✅ Página de listagem com cards
+- ✅ Filtro por status (active/completed/paused)
+- ✅ Página de criação/edição
+- ✅ Página de detalhes
+- ✅ CRUD completo
 
-**Status**: API completa, componentes parciais
+**Status**: 100% Completo
 
-**Arquivos**: `src/app/api/goals/`, `src/lib/hooks/useGoals.ts`, `src/components/goals/goal-card.tsx`
+**Arquivos**: `src/app/goals/`, `src/app/api/goals/`, `src/lib/hooks/useGoals.ts`, `src/components/goals/`
 
 ---
 
-### 8. Recursos de Aprendizado (Resources) (⏳ 0% → 100%)
-- ⏳ API endpoints (CRUD)
-- ⏳ Componente de lista de recursos
-- ⏳ Formulário de adição (URL, título, tipo)
-- ⏳ Tipos: video, article, documentation, course
-- ⏳ Status isRead (checkbox)
-- ⏳ Integração na página de conceitos
-- ⏳ Extração automática de metadados (opcional)
-- ⏳ Custom hooks (useResources)
+### 10. Recursos de Aprendizado (Resources) (✅ 100%)
+- ✅ API endpoints (CRUD)
+- ✅ Componente de lista de recursos
+- ✅ Formulário de adição (URL, título, tipo)
+- ✅ Tipos: video, article, documentation, course
+- ✅ Status isRead (checkbox)
+- ✅ Integração na página de conceitos
+- ✅ Custom hooks (useResources)
 
-**Status**: Model existe, precisa de implementação completa
+**Status**: 100% Completo
 
----
-
-### 9. Sistema de Notas com Tags (⏳ 0% → 100%)
-- ⏳ API endpoints (CRUD Notes e Tags)
-- ⏳ Página de listagem de notas
-- ⏳ Busca por título/conteúdo
-- ⏳ Filtro por tags
-- ⏳ Ordenação (data, título)
-- ⏳ Editor de notas (markdown ou rich text)
-- ⏳ Gerenciador de tags
-- ⏳ Vinculação com tarefas
-- ⏳ Custom hooks (useNotes, useTags)
-
-**Status**: Models existem (Note, Tag, NoteTag), precisa de UI
-
----
-
-### 10. Sessões de Estudo/Pomodoro (⏳ 10% → 100%)
-- ⏳ Timer visual funcional
-- ⏳ Iniciar/pausar/retomar sessão
-- ⏳ Tipos de sessão (study/work/review/break)
-- ⏳ Registro de sessão ao finalizar
-  - ⏳ Duração
-  - ⏳ Vincular a tarefa (opcional)
-  - ⏳ Focus score (1-10)
-- ⏳ Histórico de sessões
-- ⏳ API de sessões (POST, GET)
-- ⏳ Integração com atoms do Jotai
-
-**Status**: Atoms existem, precisa de UI funcional e integração com API
+**Arquivos**: `src/app/api/resources/`, `src/components/concepts/`, `src/lib/hooks/useResources.ts`
 
 ---
 
 ## 📋 Próximas Prioridades
 
-### Sprint Atual (Implementação em andamento)
-1. **Conceitos** - CRUD completo com página dedicada
-2. **Metas de Estudo** - Gerenciamento completo
-3. **Recursos** - Sistema de learning materials
-4. **Notas** - Sistema completo com tags
-5. **Sessões** - Timer Pomodoro funcional
+### ✅ Sprint Concluída (2025-11-02)
+1. ✅ **Notas** - Sistema completo com tags, busca e filtros
+2. ✅ **Sessões** - Timer Pomodoro com vinculação a tarefas
+3. ✅ **Flashcards** - Vinculação opcional removida
+4. ✅ **IA** - Geração de conceitos a partir de flashcards
+5. ✅ **Overview** - Widget de notas rápidas integrado
+
+### Sprint Atual (Em andamento)
+1. ⏳ Melhorias no sistema de conceitos
+2. ⏳ Dashboard analytics avançado
 
 ### Backlog (Futuro)
+- [ ] Integrar com Google para pegar a agenda do usuário
+- [ ] Integrar com o GitHub para pegar métricas de desenvolvimento
+- [ ] Integrar com o ExcaliDraw para permitir que o dev desenhe soluções
+- [ ] Criar widget global para que o usuário possa perguntar qql coisa para a AI
 - [ ] Analytics Avançado (gráficos, relatórios)
 - [ ] Melhorias no Calendário (drag & drop)
 - [ ] Sistema de Backup/Export
@@ -190,18 +261,23 @@
 
 ## 🎯 Metas de Progresso
 
-| Feature | Antes | Agora | Meta Sprint |
-|---------|-------|-------|-------------|
-| **Tasks** | ✅ 95% | ✅ 95% | - |
-| **Flashcards** | ✅ 95% | ✅ 100% | ✅ |
-| **IA Integration** | ⏳ 80% | ✅ 100% | ✅ |
-| **Profile** | ❌ 5% | ✅ 100% | ✅ |
-| **Conceitos** | ⏳ 30% | ✅ 100% | ✅ 100% |
-| **Metas** | ⏳ 15% | ⏳ 70% | ✅ 100% |
-| **Recursos** | ❌ 0% | ❌ 0% | ✅ 100% |
-| **Notas** | ❌ 0% | ❌ 0% | ✅ 100% |
-| **Sessões** | ⏳ 10% | ⏳ 10% | ✅ 100% |
-| **Dashboard** | ✅ 90% | ✅ 90% | - |
+| Feature | Out 31 | Nov 02 | Status |
+|---------|--------|--------|--------|
+| **Tasks** | ✅ 95% | ✅ 95% | Estável |
+| **Flashcards** | ✅ 95% | ✅ 100% | ✅ Completo |
+| **IA Integration** | ⏳ 80% | ✅ 100% | ✅ Completo |
+| **Profile** | ❌ 5% | ✅ 100% | ✅ Completo |
+| **Conceitos** | ⏳ 30% | ✅ 100% | ✅ Completo |
+| **Metas** | ⏳ 15% | ✅ 100% | ✅ Completo |
+| **Recursos** | ❌ 0% | ✅ 100% | ✅ Completo |
+| **Notas** | ❌ 0% | ✅ 100% | ✅ **NOVO** |
+| **Sessões/Pomodoro** | ⏳ 10% | ✅ 100% | ✅ Completo |
+| **Dashboard** | ✅ 90% | ✅ 95% | Melhorado |
+
+### 📈 Resumo do Progresso
+- **Antes (31/Out)**: 45% completo
+- **Depois (02/Nov)**: **98% completo**
+- **Incremento**: +53% em 2 dias! 🚀
 
 ---
 
@@ -228,11 +304,11 @@ Notas
 ### Ordem de Implementação
 1. ✅ Tasks + Flashcards + IA (completos)
 2. ✅ Profile + Tech Stack (completos)
-3. ⏳ Conceitos (base para outras features)
-4. ⏳ Metas de Estudo (usa conceitos)
-5. ⏳ Recursos (linkados a conceitos)
-6. ⏳ Notas (independente)
-7. ⏳ Sessões (integração com timer)
+3. ✅ Conceitos (base para outras features)
+4. ✅ Metas de Estudo (usa conceitos)
+5. ✅ Recursos (linkados a conceitos)
+6. ✅ Notas (independente) **NOVO 2025-11-02**
+7. ✅ Sessões (integração com timer) **ATUALIZADO 2025-11-02**
 
 ---
 
@@ -251,9 +327,51 @@ Notas
 
 ---
 
+## 🆕 Novidades da Versão (2025-11-02)
+
+### Sistema de Notas Completo
+- Widget de notas rápidas no Overview
+- Página dedicada com busca e filtros
+- Sistema de tags com cores
+- CRUD completo (criar, editar, deletar)
+- Vinculação opcional com tarefas
+- Suporte a código (formatação monospace)
+
+### Timer Pomodoro Aprimorado
+- Vinculação opcional com tarefas
+- Seleção de tarefa antes de iniciar
+- Auto-link da sessão ao finalizar
+- Exibição da tarefa no dialog de salvamento
+
+### IA Generativa de Conceitos
+- Geração automática de conceitos a partir de flashcards
+- Análise de conteúdo técnico
+- Extração de 2-5 conceitos relevantes
+- Categorização automática
+- Detecção de conceitos duplicados
+- Criação seletiva de conceitos
+
+### Flashcards Mais Flexíveis
+- Vinculação com tarefas/conceitos agora é opcional
+- Criação de flashcards standalone
+- Dropdown com opção "Nenhuma tarefa/conceito"
+
+### Melhorias no Overview
+- Grid 2 colunas para Timer e Notas
+- Widget de notas rápidas integrado
+- Exibição das 3 notas mais recentes
+- Modo simples e avançado para criação
+
+### Git Worktrees
+- Documentação de workflow com worktrees
+- Suporte para versão stable e dev simultâneas
+- Setup automatizado no CLAUDE.md
+
+---
+
 ## 📄 Documentação
 
-- **CLAUDE.md**: Instruções para Claude Code
+- **CLAUDE.md**: Instruções para Claude Code (atualizado com worktrees)
 - **README.md**: Setup e comandos do projeto
 - **CHECKLIST.md**: Este documento
 - **prisma/schema.prisma**: Schema do banco de dados

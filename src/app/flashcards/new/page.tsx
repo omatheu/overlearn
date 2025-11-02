@@ -21,7 +21,9 @@ import {
 } from 'lucide-react';
 import { useCreateFlashcard } from '@/lib/hooks/useFlashcards';
 import { useTasks } from '@/lib/hooks/useTasks';
-import { useConcepts } from '@/lib/hooks/useConcepts';
+import { useConcepts, useGenerateConcepts, useCreateConcept, type GeneratedConcept } from '@/lib/hooks/useConcepts';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
+import { Checkbox } from '@/components/ui/checkbox';
 
 const flashcardSchema = z.object({
   question: z.string().min(1, 'Pergunta é obrigatória').max(500, 'Pergunta muito longa'),
@@ -29,9 +31,6 @@ const flashcardSchema = z.object({
   taskId: z.string().optional(),
   conceptId: z.string().optional(),
   source: z.enum(['manual', 'ai_generated'])
-}).refine(data => data.taskId || data.conceptId, {
-  message: 'Flashcard deve estar vinculado a uma task ou conceito',
-  path: ['taskId']
 });
 
 type FlashcardFormData = z.infer<typeof flashcardSchema>;
@@ -41,8 +40,13 @@ export default function NewFlashcardPage() {
   const createFlashcard = useCreateFlashcard();
   const { data: tasks } = useTasks();
   const { data: concepts } = useConcepts();
-  
+  const generateConcepts = useGenerateConcepts();
+  const createConcept = useCreateConcept();
+
   const [isCreating, setIsCreating] = useState(false);
+  const [showConceptDialog, setShowConceptDialog] = useState(false);
+  const [generatedConcepts, setGeneratedConcepts] = useState<GeneratedConcept[]>([]);
+  const [selectedConcepts, setSelectedConcepts] = useState<Set<number>>(new Set());
 
   const {
     register,
@@ -74,17 +78,66 @@ export default function NewFlashcardPage() {
   };
 
   const handleTaskChange = (taskId: string) => {
-    setValue('taskId', taskId);
-    setValue('conceptId', ''); // Limpar conceito quando selecionar task
+    setValue('taskId', taskId === 'none' ? undefined : taskId);
   };
 
   const handleConceptChange = (conceptId: string) => {
-    setValue('conceptId', conceptId);
-    setValue('taskId', ''); // Limpar task quando selecionar conceito
+    setValue('conceptId', conceptId === 'none' ? undefined : conceptId);
   };
 
   const selectedTask = tasks?.find(t => t.id === selectedTaskId);
   const selectedConcept = concepts?.find(c => c.id === selectedConceptId);
+
+  const handleGenerateConcepts = async () => {
+    const question = watch('question');
+    const answer = watch('answer');
+
+    if (!question || !answer) {
+      alert('Preencha a pergunta e resposta primeiro');
+      return;
+    }
+
+    try {
+      const result = await generateConcepts.mutateAsync({ question, answer });
+      setGeneratedConcepts(result.concepts);
+      setSelectedConcepts(new Set());
+      setShowConceptDialog(true);
+    } catch (error) {
+      console.error('Erro ao gerar conceitos:', error);
+      alert('Erro ao gerar conceitos com IA');
+    }
+  };
+
+  const handleToggleConcept = (index: number) => {
+    const newSelected = new Set(selectedConcepts);
+    if (newSelected.has(index)) {
+      newSelected.delete(index);
+    } else {
+      newSelected.add(index);
+    }
+    setSelectedConcepts(newSelected);
+  };
+
+  const handleCreateSelectedConcepts = async () => {
+    const conceptsToCreate = Array.from(selectedConcepts).map(index => generatedConcepts[index]);
+
+    try {
+      for (const concept of conceptsToCreate) {
+        if (!concept.exists) {
+          await createConcept.mutateAsync({
+            name: concept.name,
+            description: concept.description,
+            category: concept.category
+          });
+        }
+      }
+      setShowConceptDialog(false);
+      alert(`${conceptsToCreate.length} conceito(s) criado(s) com sucesso!`);
+    } catch (error) {
+      console.error('Erro ao criar conceitos:', error);
+      alert('Erro ao criar alguns conceitos');
+    }
+  };
 
   return (
     <div className="container max-w-4xl mx-auto p-6 space-y-6">
@@ -122,11 +175,12 @@ export default function NewFlashcardPage() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="taskId">Task (opcional)</Label>
-                <Select onValueChange={handleTaskChange} value={selectedTaskId || ''}>
+                <Select onValueChange={handleTaskChange} value={selectedTaskId || 'none'}>
                   <SelectTrigger>
-                    <SelectValue placeholder="Selecione uma task" />
+                    <SelectValue placeholder="Nenhuma task" />
                   </SelectTrigger>
                   <SelectContent>
+                    <SelectItem value="none">Nenhuma task</SelectItem>
                     {tasks?.map((task) => (
                       <SelectItem key={task.id} value={task.id}>
                         {task.title}
@@ -151,11 +205,12 @@ export default function NewFlashcardPage() {
 
               <div className="space-y-2">
                 <Label htmlFor="conceptId">Conceito (opcional)</Label>
-                <Select onValueChange={handleConceptChange} value={selectedConceptId || ''}>
+                <Select onValueChange={handleConceptChange} value={selectedConceptId || 'none'}>
                   <SelectTrigger>
-                    <SelectValue placeholder="Selecione um conceito" />
+                    <SelectValue placeholder="Nenhum conceito" />
                   </SelectTrigger>
                   <SelectContent>
+                    <SelectItem value="none">Nenhum conceito</SelectItem>
                     {concepts?.map((concept) => (
                       <SelectItem key={concept.id} value={concept.id}>
                         {concept.name}
@@ -178,10 +233,6 @@ export default function NewFlashcardPage() {
                 )}
               </div>
             </div>
-            
-            {errors.taskId && (
-              <p className="text-sm text-destructive">{errors.taskId.message}</p>
-            )}
           </CardContent>
         </Card>
 
@@ -218,6 +269,31 @@ export default function NewFlashcardPage() {
               {errors.answer && (
                 <p className="text-sm text-destructive">{errors.answer.message}</p>
               )}
+            </div>
+
+            <div className="pt-4 border-t">
+              <Button
+                type="button"
+                variant="outline"
+                className="w-full"
+                onClick={handleGenerateConcepts}
+                disabled={generateConcepts.isPending}
+              >
+                {generateConcepts.isPending ? (
+                  <>
+                    <Brain className="h-4 w-4 mr-2 animate-spin" />
+                    Gerando conceitos com IA...
+                  </>
+                ) : (
+                  <>
+                    <Brain className="h-4 w-4 mr-2" />
+                    Gerar Conceitos com IA
+                  </>
+                )}
+              </Button>
+              <p className="text-xs text-muted-foreground mt-2 text-center">
+                A IA irá analisar seu flashcard e sugerir conceitos técnicos relevantes
+              </p>
             </div>
           </CardContent>
         </Card>
@@ -278,6 +354,82 @@ export default function NewFlashcardPage() {
           </div>
         </div>
       </form>
+
+      {/* AI Concept Generation Dialog */}
+      <Dialog open={showConceptDialog} onOpenChange={setShowConceptDialog}>
+        <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Brain className="h-5 w-5" />
+              Conceitos Gerados pela IA
+            </DialogTitle>
+            <DialogDescription>
+              Selecione os conceitos que deseja criar. Conceitos já existentes estão marcados.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-3 py-4">
+            {generatedConcepts.map((concept, index) => (
+              <div
+                key={index}
+                className={`flex items-start gap-3 p-4 rounded-lg border ${
+                  concept.exists
+                    ? 'bg-muted/50 border-muted'
+                    : 'bg-background border-border hover:border-primary'
+                }`}
+              >
+                <Checkbox
+                  checked={selectedConcepts.has(index)}
+                  onCheckedChange={() => handleToggleConcept(index)}
+                  disabled={concept.exists}
+                  className="mt-1"
+                />
+                <div className="flex-1 space-y-1">
+                  <div className="flex items-center gap-2">
+                    <h4 className="font-semibold">{concept.name}</h4>
+                    {concept.exists && (
+                      <Badge variant="secondary" className="text-xs">
+                        Já existe
+                      </Badge>
+                    )}
+                    {concept.category && (
+                      <Badge variant="outline" className="text-xs">
+                        {concept.category}
+                      </Badge>
+                    )}
+                  </div>
+                  <p className="text-sm text-muted-foreground">{concept.description}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setShowConceptDialog(false)}
+            >
+              Cancelar
+            </Button>
+            <Button
+              onClick={handleCreateSelectedConcepts}
+              disabled={selectedConcepts.size === 0 || createConcept.isPending}
+            >
+              {createConcept.isPending ? (
+                <>
+                  <Brain className="h-4 w-4 mr-2 animate-spin" />
+                  Criando...
+                </>
+              ) : (
+                <>
+                  <Plus className="h-4 w-4 mr-2" />
+                  Criar {selectedConcepts.size} Conceito(s)
+                </>
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
