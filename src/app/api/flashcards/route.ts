@@ -79,14 +79,6 @@ export async function POST(request: Request) {
       );
     }
     
-    // Se não tem taskId nem conceptId, precisa de pelo menos um
-    if (!taskId && !conceptId) {
-      return NextResponse.json(
-        { error: 'Flashcard deve estar vinculado a uma task ou conceito' },
-        { status: 400 }
-      );
-    }
-    
     const flashcard = await prisma.flashcard.create({
       data: {
         question,

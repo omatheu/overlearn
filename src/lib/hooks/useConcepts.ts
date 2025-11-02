@@ -147,3 +147,32 @@ export function useDeleteConcept() {
     }
   });
 }
+
+export interface GeneratedConcept {
+  name: string;
+  description: string;
+  category: string;
+  exists: boolean;
+  existingConcept?: Concept;
+}
+
+export function useGenerateConcepts() {
+  return useMutation({
+    mutationFn: async (data: {
+      question: string;
+      answer: string;
+    }): Promise<{ concepts: GeneratedConcept[] }> => {
+      const res = await fetch('/api/ai/concepts/generate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+      });
+
+      if (!res.ok) {
+        const error = await res.json();
+        throw new Error(error.error || 'Failed to generate concepts');
+      }
+      return res.json();
+    }
+  });
+}

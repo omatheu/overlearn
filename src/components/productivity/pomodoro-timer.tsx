@@ -9,14 +9,16 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogD
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Play, Pause, RotateCcw, Clock } from "lucide-react";
+import { Play, Pause, RotateCcw, Clock, CheckSquare } from "lucide-react";
 import { useCreateSession } from "@/lib/hooks/useSessions";
 import { useProfile } from "@/lib/hooks/useProfile";
+import { useTasks } from "@/lib/hooks/useTasks";
 
 type TimerMode = "work" | "break";
 
 export function PomodoroTimer() {
   const { data: profile } = useProfile();
+  const { data: tasks } = useTasks();
   const createSession = useCreateSession();
 
   const [mode, setMode] = useState<TimerMode>("work");
@@ -26,6 +28,7 @@ export function PomodoroTimer() {
   const [isPaused, setIsPaused] = useState(false);
   const [showSaveDialog, setShowSaveDialog] = useState(false);
   const [completedMinutes, setCompletedMinutes] = useState(0);
+  const [selectedTaskId, setSelectedTaskId] = useState<string | null>(null);
 
   const [sessionData, setSessionData] = useState({
     type: "study",
@@ -116,10 +119,12 @@ export function PomodoroTimer() {
         type: sessionData.type,
         duration: completedMinutes,
         notes: sessionData.notes || undefined,
-        focusScore: sessionData.focusScore
+        focusScore: sessionData.focusScore,
+        taskId: selectedTaskId || undefined
       });
       setShowSaveDialog(false);
       setSessionData({ type: "study", focusScore: 7, notes: "" });
+      setSelectedTaskId(null);
       resetTimer();
     } catch (error) {
       console.error("Erro ao salvar sessão:", error);
@@ -129,6 +134,9 @@ export function PomodoroTimer() {
   const formatTime = (mins: number, secs: number) => {
     return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
   };
+
+  const activeTasks = tasks?.filter(task => task.status !== 'done') || [];
+  const selectedTask = tasks?.find(task => task.id === selectedTaskId);
 
   return (
     <>
@@ -140,6 +148,35 @@ export function PomodoroTimer() {
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
+          <div className="space-y-2 mb-4">
+            <Label htmlFor="task-select" className="flex items-center gap-2">
+              <CheckSquare className="h-4 w-4" />
+              Tarefa (opcional)
+            </Label>
+            <Select
+              value={selectedTaskId || "none"}
+              onValueChange={(value) => setSelectedTaskId(value === "none" ? null : value)}
+              disabled={isActive}
+            >
+              <SelectTrigger id="task-select">
+                <SelectValue placeholder="Nenhuma tarefa selecionada" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="none">Nenhuma tarefa</SelectItem>
+                {activeTasks.map((task) => (
+                  <SelectItem key={task.id} value={task.id}>
+                    {task.title}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            {selectedTask && (
+              <p className="text-sm text-muted-foreground">
+                {selectedTask.description || "Sem descrição"}
+              </p>
+            )}
+          </div>
+
           <div className="flex justify-center gap-2 mb-4">
             <Button
               variant={mode === "work" ? "default" : "outline"}
@@ -192,6 +229,11 @@ export function PomodoroTimer() {
             <DialogTitle>Salvar Sessão de Estudo</DialogTitle>
             <DialogDescription>
               Parabéns! Você completou {completedMinutes} minutos de foco.
+              {selectedTask && (
+                <span className="block mt-2 font-medium">
+                  Tarefa: {selectedTask.title}
+                </span>
+              )}
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4">

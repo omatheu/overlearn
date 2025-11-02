@@ -114,6 +114,52 @@ import { prisma } from '@/lib/db/prisma';
 import { flashModel } from '@/lib/ai/gemini';
 ```
 
+## Development Workflow
+
+### Parallel Development with Git Worktrees
+
+When developing new features while keeping a stable version running, use **git worktrees** instead of Docker or cloning the repository. This approach is lightweight and allows running multiple branches simultaneously on different ports.
+
+**Setup:**
+```bash
+# Create a worktree for stable version (e.g., main branch)
+git worktree add ../overlearn-stable main
+
+# Install dependencies in the worktree (only needed once)
+cd ../overlearn-stable
+cp ../overlearn/.env .
+npm install
+
+# Run stable version on a different port
+npm run dev -- --port 3001
+```
+
+**Workflow:**
+- `overlearn/` → Active development branch (default port 3000)
+- `overlearn-stable/` → Stable version for daily use (port 3001)
+
+**Worktree Management:**
+```bash
+git worktree list              # List all worktrees
+git worktree remove <path>     # Remove a worktree
+git worktree prune             # Clean up stale worktree data
+```
+
+**Benefits:**
+- Lightweight (shares .git directory, ~50MB vs ~500MB for full clone)
+- Run multiple branches simultaneously on different ports
+- No Docker overhead or complex setup
+- Easy switching between stable and development versions
+
+**Database Isolation (optional):**
+If the feature branch modifies the database schema, use separate SQLite databases:
+```bash
+# In feature branch worktree
+# Edit .env to point to a different database file
+DATABASE_URL="file:./dev-feature.db"
+npx prisma migrate dev
+```
+
 ## Development Notes
 
 - The database seed file ([`prisma/seed.ts`](prisma/seed.ts)) creates a complete test dataset including user profile, tech stack, study goals, tasks, flashcards, and study sessions

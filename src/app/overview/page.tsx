@@ -9,6 +9,7 @@ import { StatCard } from "@/components/overview/stat-card";
 import { TodayTasks } from "@/components/overview/today-tasks";
 import { PendingFlashcards } from "@/components/overview/pending-flashcards";
 import { PomodoroTimer } from "@/components/productivity/pomodoro-timer";
+import { QuickNote } from "@/components/notes/quick-note";
 import {
   CheckSquare,
   Clock,
@@ -104,13 +105,22 @@ export default function OverviewPage() {
         </Grid>
       </Section>
 
-      {/* Timer Pomodoro */}
-      <Section
-        title="Timer Pomodoro"
-        description="Use a técnica Pomodoro para manter o foco e a produtividade"
-      >
-        <PomodoroTimer />
-      </Section>
+      {/* Grid de 2 colunas para Timer e Notas */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <Section
+          title="Timer Pomodoro"
+          description="Use a técnica Pomodoro para manter o foco e a produtividade"
+        >
+          <PomodoroTimer />
+        </Section>
+
+        <Section
+          title="Notas Rápidas"
+          description="Capture ideias, código e anotações de estudo"
+        >
+          <QuickNote />
+        </Section>
+      </div>
 
       {/* Grid de 2 colunas para tasks e flashcards */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
