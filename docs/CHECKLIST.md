@@ -243,19 +243,20 @@
 1. ⏳ Melhorias no sistema de conceitos
 2. ⏳ Dashboard analytics avançado
 
-### Backlog (Futuro)
-- [ ] Integrar com Google para pegar a agenda do usuário
-- [ ] Integrar com o GitHub para pegar métricas de desenvolvimento
-- [ ] Integrar com o ExcaliDraw para permitir que o dev desenhe soluções
-- [ ] Criar widget global para que o usuário possa perguntar qql coisa para a AI
-- [ ] Analytics Avançado (gráficos, relatórios)
-- [ ] Melhorias no Calendário (drag & drop)
-- [ ] Sistema de Backup/Export
-- [ ] Notificações e Lembretes
-- [ ] Modo Offline (PWA)
-- [ ] Integração com GitHub/GitLab
-- [ ] Temas personalizáveis
-- [ ] Atalhos de teclado
+### Backlog (Futuro) com priorização
+- [ ] Traduzir a aplicação para inglês - [ALTA]
+- [ ] Sistema de Backup/Export - [ALTA]
+- [ ] Notificações e Lembretes - [ALTA]
+- [ ] Modo Offline (PWA) - [ALTA]
+- [ ] Integrar com Google para pegar a agenda do usuário - [MÉDIA]
+- [ ] Criar widget global para que o usuário possa perguntar qql coisa para a AI - [MÉDIA]
+- [ ] Integrar com o GitHub para pegar métricas de desenvolvimento - [BAIXA]
+- [ ] Integrar com o ExcaliDraw para permitir que o dev desenhe soluções - [BAIXA]
+- [ ] Melhorias no Calendário (drag & drop) - [BAIXA]
+- [ ] Temas personalizáveis - [BAIXA]
+- [ ] Atalhos de teclado - [BAIXA]
+- [ ] Analytics Avançado (gráficos, relatórios) - [BAIXA]
+- [ ] Trabalhar em um landing page para esse projeto -> ideia de vender como produto mesmo - [BAIXA]
 
 ---
 

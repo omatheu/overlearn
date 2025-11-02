@@ -59,6 +59,7 @@ interface PageHeaderProps {
   action?: ReactNode;
   badge?: ReactNode;
   className?: string;
+  icon?: unknown;
 }
 
 /**

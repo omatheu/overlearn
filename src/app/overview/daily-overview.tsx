@@ -5,29 +5,57 @@ import { Button } from '@/components/ui/button';
 import { Sparkles, BookOpen, Play, Plus, Target, Brain } from 'lucide-react';
 import Link from 'next/link';
 import prisma from '@/lib/db/prisma';
+import type { Prisma } from '@prisma/client';
 
-type TaskWithConcepts = {
-  id: string;
-  title: string;
-  priority: string;
-  concepts: Array<{ concept: { name: string } }>;
+type TaskWithConcepts = Prisma.TaskGetPayload<{
+  include: {
+    concepts: {
+      include: {
+        concept: true;
+      };
+    };
+  };
+}>;
+
+type FlashcardWithRelations = Prisma.FlashcardGetPayload<{
+  include: {
+    task: {
+      select: {
+        title: true;
+      };
+    };
+    concept: {
+      select: {
+        name: true;
+      };
+    };
+  };
+}>;
+
+type DailyContext = {
+  profile: NonNullable<Awaited<ReturnType<typeof prisma.userProfile.findFirst>>>;
+  pendingTasks: TaskWithConcepts[];
+  pendingFlashcards: FlashcardWithRelations[];
+  totalPendingFlashcards: number;
+  totalFlashcards: number;
+  wellKnownFlashcards: number;
+  studyTimeYesterday: number;
 };
 
-type FlashcardWithRelations = {
-  id: string;
-  question: string;
-  task: { title: string } | null;
-  concept: { name: string } | null;
+const getPriorityBadgeVariant = (
+  priority: TaskWithConcepts['priority']
+): 'destructive' | 'secondary' => {
+  return priority === 'high' || priority === 'urgent' ? 'destructive' : 'secondary';
 };
 
-async function getDailyContext() {
+async function getDailyContext(): Promise<DailyContext | null> {
   // Buscar dados do usuário
   const profile = await prisma.userProfile.findFirst();
   
   if (!profile) return null;
 
   // Tasks pendentes
-  const pendingTasks = await prisma.task.findMany({
+  const pendingTasks: TaskWithConcepts[] = await prisma.task.findMany({
     where: {
       userProfileId: profile.id,
       status: { in: ['todo', 'doing'] }
@@ -42,7 +70,7 @@ async function getDailyContext() {
   });
 
   // Flashcards pendentes (próximos a revisar)
-  const pendingFlashcards = await prisma.flashcard.findMany({
+  const pendingFlashcards: FlashcardWithRelations[] = await prisma.flashcard.findMany({
     where: {
       OR: [
         { nextReview: null },
@@ -50,8 +78,16 @@ async function getDailyContext() {
       ]
     },
     include: {
-      task: true,
-      concept: true
+      task: {
+        select: {
+          title: true
+        }
+      },
+      concept: {
+        select: {
+          name: true
+        }
+      }
     },
     orderBy: {
       nextReview: 'asc'
@@ -99,6 +135,8 @@ async function getDailyContext() {
     }
   });
 
+  const studyTimeYesterday = studySessions._sum.duration ?? 0;
+
   return {
     profile,
     pendingTasks,
@@ -106,11 +144,11 @@ async function getDailyContext() {
     totalPendingFlashcards,
     totalFlashcards,
     wellKnownFlashcards,
-    studyTimeYesterday: studySessions._sum.duration || 0
+    studyTimeYesterday
   };
 }
 
-export async function DailyOverview() {
+export async function DailyOverview(): Promise<React.JSX.Element> {
   const context = await getDailyContext();
 
   if (!context) {
@@ -166,10 +204,9 @@ export async function DailyOverview() {
             <div className="space-y-2">
               <h3 className="font-semibold text-sm">Prioridades de Hoje:</h3>
               <div className="space-y-2">
-                {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
-                {pendingTasks.slice(0, 3).map((task: any) => (
+                {pendingTasks.slice(0, 3).map((task) => (
                   <div key={task.id} className="flex items-center gap-2 text-sm">
-                    <Badge variant={task.priority === 'high' ? 'destructive' : 'secondary'}>
+                    <Badge variant={getPriorityBadgeVariant(task.priority)}>
                       {task.priority}
                     </Badge>
                     <span className="flex-1">{task.title}</span>
@@ -237,8 +274,7 @@ export async function DailyOverview() {
                 Próximos para revisar:
               </h3>
               <div className="space-y-2">
-                {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
-                {pendingFlashcards.slice(0, 3).map((flashcard: any) => (
+                {pendingFlashcards.slice(0, 3).map((flashcard) => (
                   <div key={flashcard.id} className="flex items-center gap-2 text-sm p-2 bg-muted/50 rounded">
                     <Brain className="h-4 w-4 text-muted-foreground" />
                     <span className="flex-1 font-medium">{flashcard.question}</span>

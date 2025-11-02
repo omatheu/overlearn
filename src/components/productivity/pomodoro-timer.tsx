@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
@@ -135,8 +135,17 @@ export function PomodoroTimer() {
     return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
   };
 
-  const activeTasks = tasks?.filter(task => task.status !== 'done') || [];
-  const selectedTask = tasks?.find(task => task.id === selectedTaskId);
+  // Memoize filtered tasks to avoid re-filtering on every render
+  const activeTasks = useMemo(
+    () => tasks?.filter(task => task.status !== 'done') || [],
+    [tasks]
+  );
+
+  // Memoize selected task lookup
+  const selectedTask = useMemo(
+    () => tasks?.find(task => task.id === selectedTaskId),
+    [tasks, selectedTaskId]
+  );
 
   return (
     <>
