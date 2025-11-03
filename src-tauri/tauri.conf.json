@@ -59,18 +59,5 @@
       "tooltip": "OverLearn"
     }
   },
-  "plugins": {
-    "notification": {
-      "all": true
-    },
-    "shell": {
-      "all": false,
-      "open": true
-    },
-    "dialog": {
-      "all": false,
-      "ask": true,
-      "message": true
-    }
-  }
+  "plugins": {}
 }
