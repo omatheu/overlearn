@@ -22,6 +22,9 @@ fn main() {
         .invoke_handler(tauri::generate_handler![
             commands::greet,
             commands::show_notification,
+            commands::show_native_notification,
+            commands::notify_pomodoro_complete,
+            commands::notify_study_goal_milestone,
             commands::get_app_version,
             commands::open_dev_tools,
         ])

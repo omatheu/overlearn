@@ -57,6 +57,45 @@ export const TauriCommands = {
   },
 
   /**
+   * Show native notification (Linux libnotify)
+   */
+  showNativeNotification: async (
+    title: string,
+    message: string,
+    urgency: "low" | "normal" | "critical" = "normal"
+  ): Promise<void> => {
+    const { invoke } = await getTauriCore();
+    await invoke("show_native_notification", { title, message, urgency });
+  },
+
+  /**
+   * Notify Pomodoro session complete
+   */
+  notifyPomodoroComplete: async (
+    sessionType: "work" | "break",
+    duration: number,
+    taskTitle?: string
+  ): Promise<void> => {
+    const { invoke } = await getTauriCore();
+    await invoke("notify_pomodoro_complete", {
+      sessionType,
+      duration,
+      taskTitle,
+    });
+  },
+
+  /**
+   * Notify study goal milestone reached
+   */
+  notifyStudyGoalMilestone: async (
+    goalTitle: string,
+    milestone: number
+  ): Promise<void> => {
+    const { invoke } = await getTauriCore();
+    await invoke("notify_study_goal_milestone", { goalTitle, milestone });
+  },
+
+  /**
    * Open DevTools (debug mode only)
    */
   openDevTools: async (): Promise<void> => {
