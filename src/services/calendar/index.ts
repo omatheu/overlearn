@@ -13,6 +13,7 @@ export type {
   CalendarEvent,
   FocusMetrics,
   CalendarState,
+  IcsImportOptions,
   UseCalendarReturn,
   UseWorkingHoursReturn,
   UseTimerTrackingReturn,

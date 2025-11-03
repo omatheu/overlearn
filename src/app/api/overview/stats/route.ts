@@ -38,20 +38,6 @@ function getDateRange(period: Period) {
 }
 
 async function getStats(period: Period) {
-  'use cache';
-
-  // Set cache lifetime based on period
-  if (period === 'yesterday') {
-    cacheLife('hours'); // Yesterday data is immutable, cache longer
-  } else {
-    cacheLife('minutes'); // Recent data may change
-  }
-
-  // Set cache tags for smart invalidation
-  cacheTag('overview');
-  cacheTag('stats');
-  cacheTag(`stats-${period}`);
-
   const { startDate, endDate } = getDateRange(period);
 
   // Buscar tasks completadas no período
@@ -107,7 +93,8 @@ async function getStats(period: Period) {
 
 export async function GET(request: NextRequest) {
   try {
-    const periodParam = request.nextUrl.searchParams.get('period');
+    const { searchParams } = new URL(request.url);
+    const periodParam = searchParams.get('period');
     const period = (periodParam as Period | null) ?? 'yesterday';
 
     const stats = await getStats(period);
