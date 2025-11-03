@@ -19,7 +19,7 @@ export interface FocusSession {
 export interface ScheduledEvent {
   id: string;
   title: string;
-  type: 'flashcard' | 'break' | 'reminder' | 'custom';
+  type: 'flashcard' | 'break' | 'reminder' | 'custom' | 'meeting';
   scheduledTime: Date;
   recurring?: {
     frequency: 'daily' | 'weekly' | 'monthly' | 'custom';
@@ -28,6 +28,24 @@ export interface ScheduledEvent {
   };
   metadata?: Record<string, unknown>;
   completed?: boolean;
+}
+
+export interface IcsImportOptions {
+  /**
+   * When true, events ending before `Date.now()` will be ignored.
+   * Defaults to `true` to focus on upcoming events.
+   */
+  skipPastEvents?: boolean;
+  /**
+   * Event type that should be assigned when the .ics file does not
+   * provide a recognizable category. Defaults to `meeting`.
+   */
+  defaultEventType?: ScheduledEvent['type'];
+  /**
+   * Optional category-to-type mapping so consumers can specialize
+   * how imported events are classified.
+   */
+  categoryTypeMap?: Record<string, ScheduledEvent['type']>;
 }
 
 export interface DailyStats {
@@ -156,4 +174,5 @@ export interface UseScheduledEventsReturn {
   getUpcomingEvents: (limit?: number) => ScheduledEvent[];
   markEventCompleted: (id: string) => void;
   getEventsForDate: (date: Date) => ScheduledEvent[];
+  importFromICS: (icsContent: string, options?: IcsImportOptions) => ScheduledEvent[];
 }

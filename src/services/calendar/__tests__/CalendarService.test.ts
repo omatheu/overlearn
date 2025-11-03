@@ -179,4 +179,107 @@ describe('CalendarService', () => {
       expect(overview).toHaveProperty('productivityScore');
     });
   });
+
+  describe('importEventsFromICS', () => {
+    const toIcsDate = (date: Date): string =>
+      date.toISOString().replace(/[-:]/g, '').replace(/\.\d{3}Z$/, 'Z');
+
+    it('should parse future events and skip past ones by default', () => {
+      const now = Date.now();
+      const futureStart = new Date(now + 7 * 24 * 60 * 60 * 1000);
+      const futureEnd = new Date(futureStart.getTime() + 60 * 60 * 1000);
+      const pastStart = new Date(now - 7 * 24 * 60 * 60 * 1000);
+      const pastEnd = new Date(pastStart.getTime() + 60 * 60 * 1000);
+      [futureStart, futureEnd, pastStart, pastEnd].forEach(date => date.setUTCSeconds(0, 0));
+
+      const icsContent = [
+        'BEGIN:VCALENDAR',
+        'VERSION:2.0',
+        'BEGIN:VEVENT',
+        'UID:future-event@example.com',
+        'SUMMARY:Future Planning Session',
+        'DESCRIPTION:Discuss roadmap for the next quarter',
+        `DTSTART:${toIcsDate(futureStart)}`,
+        `DTEND:${toIcsDate(futureEnd)}`,
+        'LOCATION:Google Meet',
+        'CATEGORIES:Meeting',
+        'END:VEVENT',
+        'BEGIN:VEVENT',
+        'UID:past-event@example.com',
+        'SUMMARY:Past Alignment',
+        `DTSTART:${toIcsDate(pastStart)}`,
+        `DTEND:${toIcsDate(pastEnd)}`,
+        'END:VEVENT',
+        'END:VCALENDAR'
+      ].join('\n');
+
+      const events = CalendarService.importEventsFromICS(icsContent);
+
+      expect(events).toHaveLength(1);
+      expect(events[0].title).toBe('Future Planning Session');
+      expect(events[0].type).toBe('meeting');
+      expect(events[0].metadata).toMatchObject({
+        source: 'ics',
+        location: 'Google Meet',
+        sourceUid: 'future-event@example.com'
+      });
+      expect(events[0].scheduledTime.toISOString()).toBe(futureStart.toISOString());
+    });
+
+    it('should respect skipPastEvents option', () => {
+      const now = Date.now();
+      const pastStart = new Date(now - 3 * 24 * 60 * 60 * 1000);
+      const pastEnd = new Date(pastStart.getTime() + 90 * 60 * 1000);
+      [pastStart, pastEnd].forEach(date => date.setUTCSeconds(0, 0));
+
+      const icsContent = [
+        'BEGIN:VCALENDAR',
+        'VERSION:2.0',
+        'BEGIN:VEVENT',
+        'UID:retrospective@example.com',
+        'SUMMARY:Team Retrospective',
+        `DTSTART:${toIcsDate(pastStart)}`,
+        `DTEND:${toIcsDate(pastEnd)}`,
+        'CATEGORIES:Workshop',
+        'END:VEVENT',
+        'END:VCALENDAR'
+      ].join('\n');
+
+      const events = CalendarService.importEventsFromICS(icsContent, {
+        skipPastEvents: false,
+        defaultEventType: 'custom'
+      });
+
+      expect(events).toHaveLength(1);
+      expect(events[0].type).toBe('custom');
+      expect(events[0].metadata?.endTime).toBe(pastEnd.toISOString());
+    });
+
+    it('should map categories using provided type map', () => {
+      const futureStart = new Date(Date.now() + 2 * 24 * 60 * 60 * 1000);
+      const futureEnd = new Date(futureStart.getTime() + 30 * 60 * 1000);
+      [futureStart, futureEnd].forEach(date => date.setUTCSeconds(0, 0));
+
+      const icsContent = [
+        'BEGIN:VCALENDAR',
+        'VERSION:2.0',
+        'BEGIN:VEVENT',
+        'UID:break@example.com',
+        'SUMMARY:Quick Break',
+        `DTSTART:${toIcsDate(futureStart)}`,
+        `DTEND:${toIcsDate(futureEnd)}`,
+        'CATEGORIES:Break',
+        'END:VEVENT',
+        'END:VCALENDAR'
+      ].join('\n');
+
+      const events = CalendarService.importEventsFromICS(icsContent, {
+        categoryTypeMap: { break: 'break' }
+      });
+
+      expect(events).toHaveLength(1);
+      expect(events[0].type).toBe('break');
+      expect(events[0].metadata?.isAllDay).toBeUndefined();
+    });
+  });
 });

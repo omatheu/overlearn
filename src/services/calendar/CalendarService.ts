@@ -5,7 +5,8 @@ import {
   DailyStats, 
   CalendarConfig,
   FocusMetrics,
-  WeeklyStats
+  WeeklyStats,
+  IcsImportOptions
 } from './types';
 import {
   isWithinWorkingHours,
@@ -22,6 +23,24 @@ import {
   validateWorkingHours,
   formatDuration
 } from './utils';
+
+interface ParsedIcsEvent {
+  uid?: string;
+  summary?: string;
+  description?: string;
+  location?: string;
+  start?: Date;
+  end?: Date;
+  status?: string;
+  categories?: string[];
+  url?: string;
+  organizer?: string;
+  attendees?: string[];
+  startTimezone?: string;
+  endTimezone?: string;
+  isAllDay?: boolean;
+  extra?: Record<string, unknown>;
+}
 
 export class CalendarService {
   /**
@@ -76,6 +95,160 @@ export class CalendarService {
     minutesAhead: number = 60
   ): ScheduledEvent[] {
     return getUpcomingEvents(events, minutesAhead);
+  }
+
+  /**
+   * Importa eventos a partir de um conteúdo iCalendar (.ics)
+   */
+  static importEventsFromICS(
+    icsContent: string,
+    options: IcsImportOptions = {}
+  ): ScheduledEvent[] {
+    const {
+      skipPastEvents = true,
+      defaultEventType = 'meeting',
+      categoryTypeMap = {}
+    } = options;
+
+    if (!icsContent || typeof icsContent !== 'string') {
+      return [];
+    }
+
+    const normalizedCategoryMap = Object.fromEntries(
+      Object.entries(categoryTypeMap).map(([key, value]) => [key.toLowerCase(), value])
+    );
+
+    const lines = this.unfoldIcsLines(icsContent);
+    const now = new Date();
+    const seenUids = new Set<string>();
+    const importedEvents: ScheduledEvent[] = [];
+
+    let currentEvent: ParsedIcsEvent | null = null;
+
+    for (const rawLine of lines) {
+      const line = rawLine.trim();
+
+      if (line.length === 0) {
+        continue;
+      }
+
+      if (line.toUpperCase() === 'BEGIN:VEVENT') {
+        currentEvent = { extra: {} };
+        continue;
+      }
+
+      if (line.toUpperCase() === 'END:VEVENT') {
+        if (currentEvent?.start) {
+          const shouldSkip = skipPastEvents && this.shouldSkipImportedEvent(currentEvent, now);
+          if (!shouldSkip) {
+            const uid = currentEvent.uid;
+            if (uid) {
+              if (seenUids.has(uid)) {
+                currentEvent = null;
+                continue;
+              }
+              seenUids.add(uid);
+            }
+
+            const eventType = this.resolveImportedEventType(
+              currentEvent,
+              normalizedCategoryMap,
+              defaultEventType
+            );
+
+            const metadata = this.buildImportedEventMetadata(currentEvent);
+
+            importedEvents.push({
+              id: generateId(),
+              title: currentEvent.summary || 'Evento sem título',
+              type: eventType,
+              scheduledTime: currentEvent.start,
+              metadata,
+              completed: false
+            });
+          }
+        }
+
+        currentEvent = null;
+        continue;
+      }
+
+      if (!currentEvent) {
+        continue;
+      }
+
+      const property = this.parseIcsProperty(line);
+
+      if (!property) {
+        continue;
+      }
+
+      const { key, value, params } = property;
+
+      switch (key) {
+        case 'UID':
+          currentEvent.uid = value;
+          break;
+        case 'SUMMARY':
+          currentEvent.summary = this.decodeIcsText(value);
+          break;
+        case 'DESCRIPTION':
+          currentEvent.description = this.decodeIcsText(value);
+          break;
+        case 'LOCATION':
+          currentEvent.location = this.decodeIcsText(value);
+          break;
+        case 'STATUS':
+          currentEvent.status = value;
+          break;
+        case 'URL':
+          currentEvent.url = value;
+          break;
+        case 'CATEGORIES':
+          currentEvent.categories = value
+            .split(',')
+            .map(category => this.decodeIcsText(category.trim()))
+            .filter(Boolean);
+          break;
+        case 'DTSTART': {
+          const parsedStart = this.parseIcsDate(value, params);
+          currentEvent.start = parsedStart ?? undefined;
+          currentEvent.startTimezone = params.TZID;
+          currentEvent.isAllDay = params.VALUE === 'DATE' || !value.includes('T');
+          break;
+        }
+        case 'DTEND': {
+          const parsedEnd = this.parseIcsDate(value, params);
+          currentEvent.end = parsedEnd ?? undefined;
+          currentEvent.endTimezone = params.TZID;
+          break;
+        }
+        case 'ORGANIZER':
+          currentEvent.organizer = this.extractContact(value, params);
+          break;
+        case 'ATTENDEE': {
+          if (!currentEvent.attendees) {
+            currentEvent.attendees = [];
+          }
+          const attendee = this.extractContact(value, params);
+          if (attendee) {
+            currentEvent.attendees.push(attendee);
+          }
+          break;
+        }
+        default: {
+          if (!currentEvent.extra) {
+            currentEvent.extra = {};
+          }
+          const keyName = key.toLowerCase();
+          if (!(keyName in currentEvent.extra)) {
+            currentEvent.extra[keyName] = value;
+          }
+        }
+      }
+    }
+
+    return importedEvents;
   }
 
   /**
@@ -424,5 +597,195 @@ export class CalendarService {
       averageSessionLength,
       recommendations
     };
+  }
+
+  private static shouldSkipImportedEvent(event: ParsedIcsEvent, now: Date): boolean {
+    const endDate = event.end ?? event.start;
+    if (!endDate) {
+      return false;
+    }
+
+    return endDate.getTime() < now.getTime();
+  }
+
+  private static resolveImportedEventType(
+    event: ParsedIcsEvent,
+    categoryTypeMap: Record<string, ScheduledEvent['type']>,
+    defaultType: ScheduledEvent['type']
+  ): ScheduledEvent['type'] {
+    if (event.categories && event.categories.length > 0) {
+      for (const category of event.categories) {
+        const normalized = category.toLowerCase();
+        if (categoryTypeMap[normalized]) {
+          return categoryTypeMap[normalized];
+        }
+        if (normalized === 'break' || normalized === 'pausa' || normalized === 'intervalo') {
+          return 'break';
+        }
+      }
+    }
+
+    const summary = event.summary?.toLowerCase() || '';
+    if (summary.includes('intervalo') || summary.includes('pausa') || summary.includes('break')) {
+      return 'break';
+    }
+
+    return defaultType;
+  }
+
+  private static buildImportedEventMetadata(event: ParsedIcsEvent): Record<string, unknown> {
+    const metadata: Record<string, unknown> = {
+      source: 'ics',
+      sourceUid: event.uid,
+      description: event.description,
+      location: event.location,
+      endTime: event.end ? event.end.toISOString() : undefined,
+      status: event.status,
+      url: event.url,
+      organizer: event.organizer,
+      attendees: event.attendees,
+      timezone: event.startTimezone || event.endTimezone,
+      isAllDay: event.isAllDay ? true : undefined,
+      categories: event.categories,
+      extra: event.extra && Object.keys(event.extra).length > 0 ? event.extra : undefined
+    };
+
+    return Object.fromEntries(
+      Object.entries(metadata).filter(([, value]) => {
+        if (value === undefined || value === null) {
+          return false;
+        }
+        if (Array.isArray(value)) {
+          return value.length > 0;
+        }
+        if (typeof value === 'object') {
+          return Object.keys(value as Record<string, unknown>).length > 0;
+        }
+        return true;
+      })
+    );
+  }
+
+  private static unfoldIcsLines(content: string): string[] {
+    const rawLines = content.split(/\r\n|\n|\r/);
+    const unfolded: string[] = [];
+
+    for (const line of rawLines) {
+      if (/^[ \t]/.test(line) && unfolded.length > 0) {
+        unfolded[unfolded.length - 1] += line.slice(1);
+      } else {
+        unfolded.push(line);
+      }
+    }
+
+    return unfolded;
+  }
+
+  private static parseIcsProperty(line: string): {
+    key: string;
+    value: string;
+    params: Record<string, string>;
+  } | null {
+    const colonIndex = line.indexOf(':');
+
+    if (colonIndex === -1) {
+      return null;
+    }
+
+    const rawKey = line.slice(0, colonIndex);
+    const rawValue = line.slice(colonIndex + 1);
+
+    const [propertyName, ...paramSegments] = rawKey.split(';');
+
+    const params = paramSegments.reduce<Record<string, string>>((acc, segment) => {
+      const [paramKey, paramValue] = segment.split('=');
+      if (paramKey && paramValue) {
+        acc[paramKey.toUpperCase()] = paramValue;
+      }
+      return acc;
+    }, {});
+
+    return {
+      key: propertyName.toUpperCase(),
+      value: rawValue.trim(),
+      params
+    };
+  }
+
+  private static decodeIcsText(value: string): string {
+    return value
+      .replace(/\\n/g, '\n')
+      .replace(/\\,/g, ',')
+      .replace(/\\;/g, ';')
+      .replace(/\\\\/g, '\\');
+  }
+
+  private static parseIcsDate(
+    value: string,
+    params: Record<string, string>
+  ): Date | null {
+    const trimmed = value.trim();
+    if (!trimmed) {
+      return null;
+    }
+
+    const isUtc = trimmed.endsWith('Z');
+    const normalizedInput = isUtc ? trimmed.slice(0, -1) : trimmed;
+    const isDateValue = params.VALUE === 'DATE' || /^[0-9]{8}$/.test(normalizedInput);
+
+    const normalized = this.normalizeIcsDateString(normalizedInput, isDateValue);
+
+    if (normalized) {
+      const isoString = isUtc ? `${normalized}Z` : normalized;
+      const parsed = new Date(isoString);
+      if (!Number.isNaN(parsed.getTime())) {
+        return parsed;
+      }
+    }
+
+    const fallback = new Date(trimmed);
+    return Number.isNaN(fallback.getTime()) ? null : fallback;
+  }
+
+  private static normalizeIcsDateString(
+    value: string,
+    forceDateOnly: boolean
+  ): string | null {
+    if (forceDateOnly || /^[0-9]{8}$/.test(value)) {
+      const match = value.match(/^(\d{4})(\d{2})(\d{2})$/);
+      if (match) {
+        return `${match[1]}-${match[2]}-${match[3]}T00:00:00`;
+      }
+    }
+
+    const dateTimeWithSeconds = value.match(/^(\d{4})(\d{2})(\d{2})T(\d{2})(\d{2})(\d{2})$/);
+    if (dateTimeWithSeconds) {
+      return `${dateTimeWithSeconds[1]}-${dateTimeWithSeconds[2]}-${dateTimeWithSeconds[3]}T${dateTimeWithSeconds[4]}:${dateTimeWithSeconds[5]}:${dateTimeWithSeconds[6]}`;
+    }
+
+    const dateTimeWithoutSeconds = value.match(/^(\d{4})(\d{2})(\d{2})T(\d{2})(\d{2})$/);
+    if (dateTimeWithoutSeconds) {
+      return `${dateTimeWithoutSeconds[1]}-${dateTimeWithoutSeconds[2]}-${dateTimeWithoutSeconds[3]}T${dateTimeWithoutSeconds[4]}:${dateTimeWithoutSeconds[5]}:00`;
+    }
+
+    return null;
+  }
+
+  private static extractContact(
+    value: string,
+    params: Record<string, string>
+  ): string | undefined {
+    const email = value.replace(/^mailto:/i, '').trim();
+    const contactNameParam = params.CN ? this.decodeIcsText(params.CN) : undefined;
+
+    if (contactNameParam && email) {
+      return `${contactNameParam} <${email}>`;
+    }
+
+    if (email) {
+      return email;
+    }
+
+    return contactNameParam;
   }
 }

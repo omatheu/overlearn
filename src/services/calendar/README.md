@@ -167,6 +167,22 @@ const todayEvents = CalendarService.getEventsForDate(events, new Date());
 const upcoming = CalendarService.getUpcomingEvents(events, 120);
 ```
 
+### Importação de Eventos (.ics)
+
+```typescript
+// Parse conteúdo iCalendar exportado do Google Calendar
+const imported = CalendarService.importEventsFromICS(icsString, {
+  skipPastEvents: true,
+  categoryTypeMap: {
+    break: 'break'
+  }
+});
+
+// Persistir eventos via hooks (dedup automático por UID)
+const { importFromICS } = useScheduledEvents();
+const addedEvents = importFromICS(icsString);
+```
+
 ### Estatísticas e Métricas
 
 ```typescript

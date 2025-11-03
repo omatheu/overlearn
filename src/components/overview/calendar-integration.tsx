@@ -3,6 +3,8 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { CalendarEventsImporter } from '@/components/calendar/calendar-events-importer';
+import { CalendarEventMetadata } from '@/components/calendar/calendar-event-metadata';
 import { Clock, Play, Pause, Square, Calendar, Timer } from 'lucide-react';
 import { useCalendar, useWorkingHours, useScheduledEvents } from '@/services/calendar';
 import { formatDuration, formatTimeRemaining } from '@/services/calendar/utils';
@@ -52,6 +54,8 @@ export function CalendarIntegration() {
 
   return (
     <div className="space-y-4">
+      <CalendarEventsImporter />
+
       {/* Status do Horário de Trabalho */}
       <Card>
         <CardHeader>
@@ -182,12 +186,15 @@ export function CalendarIntegration() {
           <CardContent>
             <div className="space-y-2">
               {upcomingEvents.map(event => (
-                <div key={event.id} className="flex items-center gap-2 text-sm">
-                  <Badge variant="outline">{event.type}</Badge>
-                  <span className="flex-1">{event.title}</span>
-                  <span className="text-muted-foreground">
-                    {formatTimeRemaining(new Date(event.scheduledTime).getTime() - Date.now())}
-                  </span>
+                <div key={event.id} className="flex flex-col text-sm">
+                  <div className="flex items-center gap-2">
+                    <Badge variant="outline">{event.type}</Badge>
+                    <span className="flex-1">{event.title}</span>
+                    <span className="text-muted-foreground">
+                      {formatTimeRemaining(new Date(event.scheduledTime).getTime() - Date.now())}
+                    </span>
+                  </div>
+                  <CalendarEventMetadata event={event} />
                 </div>
               ))}
             </div>
@@ -204,17 +211,20 @@ export function CalendarIntegration() {
           <CardContent>
             <div className="space-y-2">
               {todayEvents.map(event => (
-                <div key={event.id} className="flex items-center gap-2 text-sm">
-                  <Badge variant={event.completed ? 'secondary' : 'default'}>
-                    {event.completed ? 'Concluído' : 'Pendente'}
-                  </Badge>
-                  <span className="flex-1">{event.title}</span>
-                  <span className="text-muted-foreground">
-                    {new Date(event.scheduledTime).toLocaleTimeString('pt-BR', {
-                      hour: '2-digit',
-                      minute: '2-digit'
-                    })}
-                  </span>
+                <div key={event.id} className="flex flex-col text-sm">
+                  <div className="flex items-center gap-2">
+                    <Badge variant={event.completed ? 'secondary' : 'default'}>
+                      {event.completed ? 'Concluído' : 'Pendente'}
+                    </Badge>
+                    <span className="flex-1">{event.title}</span>
+                    <span className="text-muted-foreground">
+                      {new Date(event.scheduledTime).toLocaleTimeString('pt-BR', {
+                        hour: '2-digit',
+                        minute: '2-digit'
+                      })}
+                    </span>
+                  </div>
+                  <CalendarEventMetadata event={event} />
                 </div>
               ))}
             </div>

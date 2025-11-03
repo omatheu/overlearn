@@ -1,8 +1,8 @@
 import { NextResponse } from 'next/server';
 import { FlashcardGenerator } from '@/lib/ai/services/FlashcardGenerator';
-import { 
-  FlashcardGenerationRequest, 
-  AIError, 
+import {
+  FlashcardGenerationRequest,
+  AIError,
   AIValidationError,
   AITimeoutError,
   AIContentFilterError,

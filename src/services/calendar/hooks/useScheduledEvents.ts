@@ -8,7 +8,7 @@ import {
   markEventCompletedAtom
 } from '../atoms';
 import { CalendarService } from '../CalendarService';
-import { UseScheduledEventsReturn, ScheduledEvent } from '../types';
+import { UseScheduledEventsReturn, ScheduledEvent, IcsImportOptions } from '../types';
 
 export function useScheduledEvents(): UseScheduledEventsReturn {
   const [events] = useAtom(scheduledEventsAtom);
@@ -41,6 +41,44 @@ export function useScheduledEvents(): UseScheduledEventsReturn {
     return CalendarService.getEventsForDate(events, date);
   }, [events]);
 
+  const importFromICS = useCallback((icsContent: string, options?: IcsImportOptions) => {
+    const importedEvents = CalendarService.importEventsFromICS(icsContent, options);
+
+    if (importedEvents.length === 0) {
+      return [];
+    }
+
+    const existingSourceUids = new Set(
+      events
+        .map(event => {
+          const uid = event.metadata?.sourceUid;
+          return typeof uid === 'string' ? uid : null;
+        })
+        .filter((uid): uid is string => uid !== null)
+    );
+
+    const dedupedEvents = importedEvents.filter(event => {
+      const sourceUid = typeof event.metadata?.sourceUid === 'string'
+        ? event.metadata?.sourceUid
+        : undefined;
+
+      return !sourceUid || !existingSourceUids.has(sourceUid);
+    });
+
+    dedupedEvents.forEach(event => {
+      addEvent({
+        title: event.title,
+        type: event.type,
+        scheduledTime: event.scheduledTime,
+        metadata: event.metadata,
+        recurring: event.recurring,
+        completed: event.completed
+      });
+    });
+
+    return dedupedEvents;
+  }, [addEvent, events]);
+
   // Memoizar eventos próximos para performance
   // const upcomingEvents = useMemo(() => {
   //   return getUpcomingEvents(5);
@@ -58,6 +96,7 @@ export function useScheduledEvents(): UseScheduledEventsReturn {
     deleteEvent: handleDeleteEvent,
     getUpcomingEvents,
     markEventCompleted: handleMarkEventCompleted,
-    getEventsForDate
+    getEventsForDate,
+    importFromICS
   };
 }

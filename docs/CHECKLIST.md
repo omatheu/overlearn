@@ -244,6 +244,13 @@
 2. ⏳ Dashboard analytics avançado
 
 ### Backlog (Futuro) com priorização
+- [ ] Ajustar a aplicação para rodar em background e atuar de modo proativo - [ALTA]
+  - [ ] Rodar o sistema de pomodoro em background
+  - [ ] Sugerir pausas durante o trabalho
+  - [ ] Fazer um resumo proativo todos os dias ao abrir a aplicação: overview do que estava sendo desenvolvido ontem
+- [ ] Usar o electron para buildar a aplicação nativamente
+- [ ] Pensar na distribuição do software: estruturar um script de intalação
+- [ ] Ajustar o README do projeto para melhorar a apresentação da aplicação
 - [ ] Traduzir a aplicação para inglês - [ALTA]
 - [ ] Sistema de Backup/Export - [ALTA]
 - [ ] Notificações e Lembretes - [ALTA]
