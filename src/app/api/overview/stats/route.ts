@@ -1,8 +1,14 @@
 // src/app/api/overview/stats/route.ts
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse, NextRequest } from 'next/server';
+import { cacheLife, cacheTag } from 'next/cache';
 import { prisma } from '@/lib/db/prisma';
 
 type Period = 'yesterday' | 'week' | 'month';
+
+type StudySession = {
+  duration: number;
+  type: string;
+};
 
 function getDateRange(period: Period) {
   const now = new Date();
@@ -31,66 +37,82 @@ function getDateRange(period: Period) {
   return { startDate, endDate };
 }
 
+async function getStats(period: Period) {
+  'use cache';
+
+  // Set cache lifetime based on period
+  if (period === 'yesterday') {
+    cacheLife('hours'); // Yesterday data is immutable, cache longer
+  } else {
+    cacheLife('minutes'); // Recent data may change
+  }
+
+  // Set cache tags for smart invalidation
+  cacheTag('overview');
+  cacheTag('stats');
+  cacheTag(`stats-${period}`);
+
+  const { startDate, endDate } = getDateRange(period);
+
+  // Buscar tasks completadas no período
+  const completedTasks = await prisma.task.count({
+    where: {
+      status: 'done',
+      updatedAt: {
+        gte: startDate,
+        lte: endDate,
+      },
+    },
+  });
+
+  // Buscar sessões de estudo no período
+  const studySessions = await prisma.studySession.findMany({
+    where: {
+      createdAt: {
+        gte: startDate,
+        lte: endDate,
+      },
+    },
+    select: {
+      duration: true,
+      type: true,
+    },
+  });
+
+  // Calcular tempo total de foco (em minutos)
+  const totalFocusTime = studySessions.reduce((total: number, session: StudySession) => {
+    return total + session.duration;
+  }, 0);
+
+  // Contar número de sessões
+  const sessionCount = studySessions.length;
+
+  // Contar sessões por tipo
+  const pomodoroSessions = studySessions.filter((s: StudySession) => s.type === 'pomodoro').length;
+  const studySessionsCount = studySessions.filter((s: StudySession) => s.type === 'study').length;
+  const reviewSessions = studySessions.filter((s: StudySession) => s.type === 'review').length;
+
+  return {
+    period,
+    completedTasks,
+    totalFocusTime,
+    sessionCount,
+    breakdown: {
+      pomodoro: pomodoroSessions,
+      study: studySessionsCount,
+      review: reviewSessions,
+    },
+  };
+}
+
 export async function GET(request: NextRequest) {
   try {
-    const searchParams = request.nextUrl.searchParams;
-    const period = (searchParams.get('period') as Period) || 'yesterday';
+    const periodParam = request.nextUrl.searchParams.get('period');
+    const period = (periodParam as Period | null) ?? 'yesterday';
 
-    const { startDate, endDate } = getDateRange(period);
+    const stats = await getStats(period);
 
-    // Buscar tasks completadas no período
-    const completedTasks = await prisma.task.count({
-      where: {
-        status: 'done',
-        updatedAt: {
-          gte: startDate,
-          lte: endDate,
-        },
-      },
-    });
-
-    // Buscar sessões de estudo no período
-    const studySessions = await prisma.studySession.findMany({
-      where: {
-        createdAt: {
-          gte: startDate,
-          lte: endDate,
-        },
-      },
-      select: {
-        duration: true,
-        type: true,
-      },
-    });
-
-    // Calcular tempo total de foco (em minutos)
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const totalFocusTime = studySessions.reduce((total: number, session: any) => {
-      return total + session.duration;
-    }, 0);
-
-    // Contar número de sessões
-    const sessionCount = studySessions.length;
-
-    // Contar sessões por tipo
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const pomodoroSessions = studySessions.filter((s: any) => s.type === 'pomodoro').length;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const studySessionsCount = studySessions.filter((s: any) => s.type === 'study').length;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const reviewSessions = studySessions.filter((s: any) => s.type === 'review').length;
-
-    return NextResponse.json({
-      period,
-      completedTasks,
-      totalFocusTime,
-      sessionCount,
-      breakdown: {
-        pomodoro: pomodoroSessions,
-        study: studySessionsCount,
-        review: reviewSessions,
-      },
-    });
+    return NextResponse.json(stats);
   } catch (error) {
     console.error('Error fetching overview stats:', error);
     return NextResponse.json(

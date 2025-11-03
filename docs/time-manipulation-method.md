@@ -1,4 +1,4 @@
-How the Application Tracks Time Spent on Concepts
+# How the Application Tracks Time Spent on Concepts
 
   The application tracks time spent on concepts through an indirect relationship chain:
 

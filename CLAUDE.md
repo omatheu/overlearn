@@ -185,10 +185,20 @@ npx prisma migrate dev
 
     7. Always output the full component unless told otherwise.
 
-    8. Never say “X remains unchanged” — always show the code.
+    8. Never say "X remains unchanged" — always show the code.
 
-    9. Be explicit on where snippets go (e.g., below “abc”, above “xyz”).
+    9. Be explicit on where snippets go (e.g., below "abc", above "xyz").
 
     10. If only one function changes, just show that one.
 
     11. Take your time to ultrathink when on extended thinking mode — thinking is cheaper than fixing bugs.
+
+    12. **Code Quality Progress Tracking**: Whenever you make code quality improvements to the project (bug fixes, refactoring, performance optimizations, security enhancements, etc.), you MUST update the `improve-code-quality-progress.md` file with:
+        - Detailed description of what was changed
+        - Files affected (created/modified/deleted)
+        - Impact and benefits of the changes
+        - Before/after code examples where relevant
+        - Testing checklist items
+        - Known issues or limitations
+
+        This ensures the project maintains a comprehensive history of all improvements and provides clear documentation for future reference.

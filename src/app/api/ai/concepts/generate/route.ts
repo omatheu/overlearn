@@ -52,7 +52,7 @@ Regras importantes:
       }
       parsedResponse = JSON.parse(jsonMatch[0]);
     } catch (parseError) {
-      console.error('Failed to parse AI response:', text);
+      console.error('Failed to parse AI response:', text, parseError);
       return NextResponse.json(
         { error: 'Falha ao processar resposta da IA' },
         { status: 500 }

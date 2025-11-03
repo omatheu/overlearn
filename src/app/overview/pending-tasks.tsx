@@ -4,8 +4,10 @@ import { Button } from '@/components/ui/button';
 import { BookOpen, Brain, Zap } from 'lucide-react';
 import prisma from '@/lib/db/prisma';
 import Link from 'next/link';
+import { connection } from 'next/server';
 
 async function getFlashcardStats() {
+  await connection(); // Opt out of static generation
   const now = new Date();
 
   // Flashcards pendentes (nunca revisados ou que estão prontos para revisar)

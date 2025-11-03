@@ -1,5 +1,15 @@
 import { prisma } from '@/lib/db/prisma';
 import { NextResponse } from 'next/server';
+import { addDays } from 'date-fns';
+import {
+  SM2_DEFAULT_EASE_FACTOR,
+  SM2_FIRST_INTERVAL,
+  SM2_QUALITY,
+  calculateEaseFactor,
+  calculateInterval,
+  isValidQuality,
+} from '@/lib/constants/sm2';
+import { FLASHCARD_INCLUDES } from '@/lib/prisma-queries';
 
 /**
  * Algoritmo SM-2 (SuperMemo 2) para repetição espaçada
@@ -10,42 +20,29 @@ function calculateNextReview(quality: number, currentData: {
   interval?: number;
   repetitions?: number;
 }) {
-  const { easeFactor = 2.5, interval = 1, repetitions = 0 } = currentData;
-  
-  // Calcular novo ease factor
-  let newEaseFactor = easeFactor + (0.1 - (5 - quality) * (0.08 + (5 - quality) * 0.02));
-  
-  // Limitar ease factor mínimo
-  if (newEaseFactor < 1.3) {
-    newEaseFactor = 1.3;
+  const {
+    easeFactor = SM2_DEFAULT_EASE_FACTOR,
+    interval = SM2_FIRST_INTERVAL,
+    repetitions = 0
+  } = currentData;
+
+  // Validate quality score
+  if (!isValidQuality(quality)) {
+    throw new Error(`Invalid quality score: ${quality}. Must be between 0-5.`);
   }
-  
-  let newInterval: number;
-  let newRepetitions: number;
-  
-  // Se qualidade < 3, resetar (errou)
-  if (quality < 3) {
-    newInterval = 1;
-    newRepetitions = 0;
-  } else {
-    // Acertou - calcular novo intervalo
-    if (repetitions === 0) {
-      // Primeira repetição: 1 dia
-      newInterval = 1;
-    } else if (repetitions === 1) {
-      // Segunda repetição: 6 dias
-      newInterval = 6;
-    } else {
-      // Próximas: multiplicar pelo ease factor
-      newInterval = Math.round(interval * newEaseFactor);
-    }
-    newRepetitions = repetitions + 1;
-  }
-  
-  // Calcular próxima data de revisão
-  const nextReview = new Date();
-  nextReview.setDate(nextReview.getDate() + newInterval);
-  
+
+  // Calculate new ease factor using helper
+  const newEaseFactor = calculateEaseFactor(easeFactor, quality);
+
+  // Calculate new interval using helper
+  const newInterval = calculateInterval(interval, repetitions, newEaseFactor, quality);
+
+  // Update repetitions count
+  const newRepetitions = quality < SM2_QUALITY.CORRECT_DIFFICULT ? 0 : repetitions + 1;
+
+  // Calculate next review date
+  const nextReview = addDays(new Date(), newInterval);
+
   return {
     easeFactor: newEaseFactor,
     interval: newInterval,
@@ -73,10 +70,7 @@ export async function POST(
     const { id } = await params;
     const flashcard = await prisma.flashcard.findUnique({
       where: { id },
-      include: {
-        task: true,
-        concept: true
-      }
+      include: FLASHCARD_INCLUDES.basic,
     });
     
     if (!flashcard) {
@@ -100,18 +94,7 @@ export async function POST(
           nextReview: newData.nextReview,
           updatedAt: new Date()
         },
-        include: {
-          task: {
-            include: {
-              concepts: {
-                include: {
-                  concept: true
-                }
-              }
-            }
-          },
-          concept: true
-        }
+        include: FLASHCARD_INCLUDES.full,
       }),
       prisma.flashcardReview.create({
         data: {

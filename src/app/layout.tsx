@@ -1,6 +1,7 @@
 // src/app/layout.tsx
 import type { Metadata } from "next";
 import "./globals.css";
+import { Suspense } from "react";
 import { Provider } from "jotai";
 import { ThemeProvider } from "@/lib/hooks/useTheme";
 import { QueryProvider } from "@/components/providers/query-provider";
@@ -22,7 +23,9 @@ export default function RootLayout({
         <ThemeProvider>
           <QueryProvider>
             <Provider>
-              <Header />
+              <Suspense fallback={<div className="h-16" />}>
+                <Header />
+              </Suspense>
               {children}
             </Provider>
           </QueryProvider>

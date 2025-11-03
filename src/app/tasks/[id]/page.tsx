@@ -1,4 +1,5 @@
 import { notFound } from 'next/navigation';
+import { cacheLife, cacheTag } from 'next/cache';
 import prisma from '@/lib/db/prisma';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -14,6 +15,15 @@ import { Stack } from '@/components/layout';
 import { PriorityBadge } from '@/components/ui/priority-badge';
 
 async function getTask(id: string) {
+  'use cache';
+
+  // Set cache lifetime - 2 minutes
+  cacheLife('minutes');
+
+  // Set cache tags for smart invalidation
+  cacheTag('tasks');
+  cacheTag(`task-${id}`);
+
   const task = await prisma.task.findUnique({
     where: { id },
     include: {
