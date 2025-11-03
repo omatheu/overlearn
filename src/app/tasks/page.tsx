@@ -1,6 +1,7 @@
 import { Button } from '@/components/ui/button';
 import { Plus, ListTodo } from 'lucide-react';
 import Link from 'next/link';
+import { cacheLife, cacheTag } from 'next/cache';
 import prisma from '@/lib/db/prisma';
 import { TaskCard } from '@/components/tasks/task-card';
 import { TaskFilters } from '@/components/tasks/task-filters';
@@ -22,10 +23,21 @@ type TaskWithConcepts = {
   [key: string]: unknown;
 };
 
-async function getTasks(params: SearchParams) {
-  const profile = await prisma.userProfile.findFirst();
+async function getTasks(
+  userId: string,
+  search?: string,
+  status?: string,
+  priority?: string,
+  sort?: string
+) {
+  'use cache';
 
-  if (!profile) return [];
+  // Set cache lifetime - 1 minute
+  cacheLife('minutes');
+
+  // Set cache tags for smart invalidation
+  cacheTag('tasks');
+  cacheTag(`user-tasks-${userId}`);
 
   // Build where clause
   const where: {
@@ -34,29 +46,29 @@ async function getTasks(params: SearchParams) {
     status?: string;
     priority?: string;
   } = {
-    userProfileId: profile.id,
+    userProfileId: userId,
   };
 
-  if (params.search) {
+  if (search) {
     where.OR = [
-      { title: { contains: params.search } },
-      { description: { contains: params.search } }
+      { title: { contains: search } },
+      { description: { contains: search } }
     ];
   }
 
-  if (params.status && params.status !== 'all') {
-    where.status = params.status;
+  if (status && status !== 'all') {
+    where.status = status;
   }
 
-  if (params.priority && params.priority !== 'all') {
-    where.priority = params.priority;
+  if (priority && priority !== 'all') {
+    where.priority = priority;
   }
 
   // Build orderBy
   let orderBy: { createdAt?: 'desc' | 'asc'; title?: 'desc' | 'asc' } = { createdAt: 'desc' };
 
-  if (params.sort) {
-    const [field, order] = params.sort.split('-');
+  if (sort) {
+    const [field, order] = sort.split('-');
 
     if (field === 'priority') {
       // Custom priority order
@@ -102,7 +114,32 @@ export default async function TasksPage({
   searchParams: Promise<SearchParams>;
 }) {
   const params = await searchParams;
-  const tasks = await getTasks(params);
+
+  // Get user profile first
+  const profile = await prisma.userProfile.findFirst();
+
+  if (!profile) {
+    return (
+      <PageLayout maxWidth="xl">
+        <PageContent>
+          <EmptyState
+            icon={ListTodo}
+            title="Perfil não encontrado"
+            description="Crie um perfil para começar a usar as tarefas"
+          />
+        </PageContent>
+      </PageLayout>
+    );
+  }
+
+  // Call cached function with serializable arguments
+  const tasks = await getTasks(
+    profile.id,
+    params.search,
+    params.status,
+    params.priority,
+    params.sort
+  );
 
   const hasFilters = params.search || params.status || params.priority;
 

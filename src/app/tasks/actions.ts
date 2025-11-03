@@ -1,7 +1,7 @@
 'use server';
 
 import prisma from '@/lib/db/prisma';
-import { revalidatePath } from 'next/cache';
+import { revalidatePath, revalidateTag } from 'next/cache';
 import { redirect } from 'next/navigation';
 
 export type TaskFormData = {
@@ -49,8 +49,16 @@ export async function createTask(data: TaskFormData) {
       }
     });
 
+    // Revalidate cache tags for smart invalidation
+    revalidateTag('tasks', 'max');
+    revalidateTag('today-tasks', 'max'); // In case task is scheduled for today
+    revalidateTag('overview', 'max'); // Update dashboard stats
+    revalidateTag(`user-tasks-${profile.id}`, 'max');
+
+    // Fallback path revalidation
     revalidatePath('/tasks');
     revalidatePath('/');
+
     return { success: true, task };
   } catch (error) {
     console.error('Error creating task:', error);
@@ -91,9 +99,17 @@ export async function updateTask(id: string, data: TaskFormData) {
       }
     });
 
+    // Revalidate specific cache tags
+    revalidateTag('tasks', 'max');
+    revalidateTag(`task-${id}`, 'max'); // Invalidate specific task cache
+    revalidateTag('today-tasks', 'max'); // In case scheduling changed
+    revalidateTag('overview', 'max'); // Update dashboard stats
+
+    // Fallback path revalidation
     revalidatePath('/tasks');
     revalidatePath(`/tasks/${id}`);
     revalidatePath('/');
+
     return { success: true, task };
   } catch (error) {
     console.error('Error updating task:', error);
@@ -107,8 +123,16 @@ export async function deleteTask(id: string) {
       where: { id }
     });
 
+    // Revalidate cache tags
+    revalidateTag('tasks', 'max');
+    revalidateTag(`task-${id}`, 'max');
+    revalidateTag('today-tasks', 'max');
+    revalidateTag('overview', 'max');
+
+    // Fallback path revalidation
     revalidatePath('/tasks');
     revalidatePath('/');
+
     return { success: true };
   } catch (error) {
     console.error('Error deleting task:', error);
@@ -143,9 +167,18 @@ export async function toggleTaskStatus(id: string) {
       }
     });
 
+    // Revalidate cache tags
+    revalidateTag('tasks', 'max');
+    revalidateTag(`task-${id}`, 'max');
+    revalidateTag('today-tasks', 'max');
+    revalidateTag('overview', 'max'); // Status changes affect stats
+    revalidateTag('stats', 'max'); // Completed tasks affect statistics
+
+    // Fallback path revalidation
     revalidatePath('/tasks');
     revalidatePath(`/tasks/${id}`);
     revalidatePath('/');
+
     return { success: true };
   } catch (error) {
     console.error('Error toggling task status:', error);
