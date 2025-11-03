@@ -1,0 +1,37 @@
+[Unit]
+Description=OverLearn - Productivity and Learning Management Platform
+Documentation=https://github.com/yourusername/overlearn
+After=network-online.target docker.service
+Wants=network-online.target
+Requires=docker.service
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+WorkingDirectory=/opt/overlearn
+
+# Start command
+ExecStart=/usr/bin/docker compose up -d
+
+# Stop command
+ExecStop=/usr/bin/docker compose down
+
+# Restart policy
+Restart=on-failure
+RestartSec=10
+
+# Security settings
+# Run as root (required for Docker)
+User=root
+Group=docker
+
+# Logging
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=overlearn
+
+# Environment
+Environment="COMPOSE_PROJECT_NAME=overlearn"
+
+[Install]
+WantedBy=multi-user.target

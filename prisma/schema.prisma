@@ -36,10 +36,12 @@ model UserProfile {
   updatedAt DateTime @updatedAt
   
   // Relacionamentos
-  tasks           Task[]
-  studyGoals      StudyGoal[]
-  studySessions   StudySession[]
-  notes           Note[]
+  tasks                     Task[]
+  studyGoals                StudyGoal[]
+  studySessions             StudySession[]
+  notes                     Note[]
+  notifications             Notification[]
+  notificationPreferences   NotificationPreferences?
 }
 
 // ============================================
@@ -76,8 +78,9 @@ model StudyGoal {
   userProfile   UserProfile @relation(fields: [userProfileId], references: [id], onDelete: Cascade)
   
   // Relacionamentos
-  tasks       Task[]
-  concepts    Concept[]
+  tasks         Task[]
+  concepts      Concept[]
+  notifications Notification[]
   
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
@@ -161,6 +164,7 @@ model Task {
   flashcards    Flashcard[]
   sessions      StudySession[]
   notes         Note[]
+  notifications Notification[]
 
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
@@ -315,16 +319,95 @@ model Note {
   id          String   @id @default(cuid())
   title       String?
   content     String
-  
+
   // Relacionamentos
   tags        NoteTag[] // ✅ Agora é relação real
-  
+
   taskId      String?
   task        Task?    @relation(fields: [taskId], references: [id], onDelete: SetNull)
-  
+
   userProfileId String
   userProfile   UserProfile @relation(fields: [userProfileId], references: [id], onDelete: Cascade)
-  
+
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+}
+
+// ============================================
+// NOTIFICAÇÕES
+// ============================================
+
+model Notification {
+  id              String    @id @default(cuid())
+
+  // Tipo de notificação
+  type            String    // "pomodoro_complete", "pomodoro_break_complete", "study_goal_milestone", "study_goal_deadline", "task_due_soon"
+
+  // Conteúdo
+  title           String
+  message         String
+
+  // Estado
+  isRead          Boolean   @default(false)
+
+  // Método de entrega
+  deliveryMethod  String    @default("system") // "system", "email", "both"
+
+  // Agendamento
+  scheduledFor    DateTime? // Quando deve ser enviada (null = imediato)
+  sentAt          DateTime? // Quando foi efetivamente enviada
+
+  // Relacionamentos opcionais
+  studyGoalId     String?
+  studyGoal       StudyGoal? @relation(fields: [studyGoalId], references: [id], onDelete: Cascade)
+
+  taskId          String?
+  task            Task?      @relation(fields: [taskId], references: [id], onDelete: Cascade)
+
+  userProfileId   String
+  userProfile     UserProfile @relation(fields: [userProfileId], references: [id], onDelete: Cascade)
+
+  // Metadados
+  metadata        String?    // JSON extra data (e.g., {"progress": 75, "goalName": "Learn Rust"})
+
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  @@index([userProfileId])
+  @@index([type])
+  @@index([isRead])
+  @@index([scheduledFor])
+  @@index([createdAt])
+}
+
+// ============================================
+// PREFERÊNCIAS DE NOTIFICAÇÃO
+// ============================================
+
+model NotificationPreferences {
+  id                    String   @id @default(cuid())
+
+  // Toggles por tipo de evento
+  pomodoroEnabled       Boolean  @default(true)
+  studyGoalEnabled      Boolean  @default(true)
+  taskDeadlineEnabled   Boolean  @default(true)
+
+  // Métodos de entrega
+  systemNotifications   Boolean  @default(true)
+  emailNotifications    Boolean  @default(false)
+
+  // Configuração de email
+  email                 String?
+
+  // Horário de silêncio
+  quietHoursEnabled     Boolean  @default(false)
+  quietHoursStart       String?  // "22:00"
+  quietHoursEnd         String?  // "08:00"
+
+  // Relação com usuário (one-to-one)
+  userProfileId         String   @unique
+  userProfile           UserProfile @relation(fields: [userProfileId], references: [id], onDelete: Cascade)
+
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
 }

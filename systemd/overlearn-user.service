@@ -1,0 +1,35 @@
+[Unit]
+Description=OverLearn - Productivity and Learning Management Platform (User Mode)
+Documentation=https://github.com/yourusername/overlearn
+After=network-online.target
+
+[Service]
+Type=simple
+WorkingDirectory=%h/overlearn
+
+# Start the application (using Node.js directly, not Docker)
+ExecStart=/usr/bin/npm start
+
+# Stop command
+ExecStop=/bin/kill -TERM $MAINPID
+
+# Restart policy
+Restart=on-failure
+RestartSec=10
+
+# Environment variables (adjust as needed)
+Environment="NODE_ENV=production"
+Environment="PORT=3000"
+Environment="DATABASE_URL=file:%h/overlearn/prisma/production.db"
+
+# Logging
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=overlearn
+
+# Resource limits (optional)
+LimitNOFILE=65536
+LimitNPROC=4096
+
+[Install]
+WantedBy=default.target

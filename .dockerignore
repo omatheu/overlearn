@@ -1,0 +1,104 @@
+# ============================================
+# .dockerignore for OverLearn
+# Exclude files from Docker build context
+# ============================================
+
+# Dependencies
+node_modules
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Testing
+coverage
+*.lcov
+.nyc_output
+
+# Next.js
+.next/
+out/
+build/
+dist/
+
+# Production
+*.log
+
+# Environment variables
+.env
+.env*.local
+.env.development
+.env.test
+.env.production
+
+# Editor directories and files
+.vscode/*
+!.vscode/extensions.json
+.idea
+*.swp
+*.swo
+*~
+.DS_Store
+*.sublime-project
+*.sublime-workspace
+
+# OS files
+Thumbs.db
+
+# Git
+.git
+.gitignore
+.gitattributes
+.github
+
+# Docker
+Dockerfile*
+docker-compose*.yml
+.dockerignore
+
+# Documentation
+README.md
+CHANGELOG.md
+LICENSE
+docs/
+*.md
+
+# Prisma (exclude local database, but keep schema and migrations)
+prisma/*.db
+prisma/*.db-journal
+prisma/data/
+
+# TypeScript
+*.tsbuildinfo
+
+# Debugging
+.vscode/launch.json
+.vscode/settings.json
+
+# Turbopack cache
+.turbo/
+
+# System files
+**/.DS_Store
+**/Thumbs.db
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+
+# Scripts (optional, depending on if you need them in container)
+scripts/install.sh
+scripts/setup-systemd.sh
+
+# Tauri (desktop app files not needed in Docker)
+src-tauri/
+target/
+
+# Systemd
+systemd/
+
+# CI/CD
+.gitlab-ci.yml
+.travis.yml
+azure-pipelines.yml
