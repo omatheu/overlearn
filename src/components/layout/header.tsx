@@ -3,7 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
-import { Home, Calendar, BookOpen, ListTodo, BarChart3, Lightbulb, Target, StickyNote } from "lucide-react";
+import { Home, Calendar, BookOpen, ListTodo, BarChart3, Lightbulb, Target, StickyNote, Settings } from "lucide-react";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils/cn";
 
@@ -16,6 +16,7 @@ const navItems = [
   { href: "/concepts", label: "Conceitos", icon: Lightbulb },
   { href: "/flashcards", label: "Flashcards", icon: BookOpen },
   { href: "/calendar", label: "Calendário", icon: Calendar },
+  { href: "/settings", label: "Configurações", icon: Settings },
 ];
 
 export function Header() {

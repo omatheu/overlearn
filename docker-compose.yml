@@ -1,0 +1,74 @@
+services:
+  # ============================================
+  # OverLearn Application
+  # ============================================
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: overlearn
+    restart: unless-stopped
+    ports:
+      - "${PORT:-3000}:3000"
+    environment:
+      # Database
+      - DATABASE_URL=file:/app/prisma/data/production.db
+
+      # AI Integration
+      - GEMINI_API_KEY=${GEMINI_API_KEY}
+
+      # Email Notifications (optional)
+      - SMTP_HOST=${SMTP_HOST:-}
+      - SMTP_PORT=${SMTP_PORT:-587}
+      - SMTP_USER=${SMTP_USER:-}
+      - SMTP_PASS=${SMTP_PASS:-}
+      - EMAIL_FROM=${EMAIL_FROM:-OverLearn <noreply@overlearn.app>}
+
+      # Application
+      - NODE_ENV=production
+      - NEXT_TELEMETRY_DISABLED=1
+      - PORT=3000
+      - TZ=${TZ:-America/Sao_Paulo}
+
+    volumes:
+      # Persist SQLite database
+      - overlearn_data:/app/prisma/data
+
+      # Optional: Mount .env for easy configuration
+      - ./.env:/app/.env:ro
+
+    networks:
+      - overlearn_network
+
+    healthcheck:
+      test: ["CMD", "node", "-e", "require('http').get('http://localhost:3000/api/health', (r) => {process.exit(r.statusCode === 200 ? 0 : 1)})"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+    # Run database migrations on startup
+    command: >
+      sh -c "
+        echo '🔄 Running database migrations...' &&
+        npx prisma migrate deploy &&
+        echo '✅ Migrations complete!' &&
+        echo '🚀 Starting OverLearn...' &&
+        npm start
+      "
+
+# ============================================
+# Volumes
+# ============================================
+volumes:
+  overlearn_data:
+    driver: local
+    name: overlearn_data
+
+# ============================================
+# Networks
+# ============================================
+networks:
+  overlearn_network:
+    driver: bridge
+    name: overlearn_network

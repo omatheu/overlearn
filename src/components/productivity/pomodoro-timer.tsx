@@ -13,6 +13,8 @@ import { Play, Pause, RotateCcw, Clock, CheckSquare } from "lucide-react";
 import { useCreateSession } from "@/lib/hooks/useSessions";
 import { useProfile } from "@/lib/hooks/useProfile";
 import { useTasks } from "@/lib/hooks/useTasks";
+import { useTauri } from "@/lib/tauri";
+import { useNotificationPreferences } from "@/lib/hooks/useNotificationPreferences";
 
 type TimerMode = "work" | "break";
 
@@ -20,6 +22,8 @@ export function PomodoroTimer() {
   const { data: profile } = useProfile();
   const { data: tasks } = useTasks();
   const createSession = useCreateSession();
+  const { isTauri, commands } = useTauri();
+  const { preferences } = useNotificationPreferences();
 
   const [mode, setMode] = useState<TimerMode>("work");
   const [minutes, setMinutes] = useState(25);
@@ -45,12 +49,52 @@ export function PomodoroTimer() {
   const currentSeconds = minutes * 60 + seconds;
   const progress = ((totalSeconds - currentSeconds) / totalSeconds) * 100;
 
-  const handleTimerComplete = () => {
+  const handleTimerComplete = async () => {
     setIsActive(false);
     setIsPaused(false);
 
+    const duration = mode === "work"
+      ? (profile?.pomodoroMinutes || 25)
+      : (profile?.breakMinutes || 5);
+
+    // Send notifications if preferences allow
+    if (preferences?.pomodoroEnabled) {
+      try {
+        // Get task title if available
+        const taskTitle = selectedTask?.title;
+
+        // 1. Native system notification (if in Tauri and enabled)
+        if (isTauri && preferences.systemNotifications) {
+          await commands.notifyPomodoroComplete(mode, duration, taskTitle);
+        }
+
+        // 2. Backend notification (database + email if enabled)
+        await fetch("/api/notifications", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            type: mode === "work" ? "pomodoro_work_complete" : "pomodoro_break_complete",
+            title: mode === "work"
+              ? "🎯 Sessão de Trabalho Concluída!"
+              : "☕ Intervalo Concluído!",
+            message: mode === "work"
+              ? `Parabéns! Você completou ${duration} minutos de foco${taskTitle ? ` em "${taskTitle}"` : ""}.`
+              : `Intervalo de ${duration} minutos finalizado. Hora de voltar ao trabalho!`,
+            taskId: selectedTaskId || undefined,
+            metadata: JSON.stringify({
+              duration,
+              mode,
+              taskTitle
+            })
+          })
+        });
+      } catch (error) {
+        console.error("Erro ao enviar notificação de Pomodoro:", error);
+      }
+    }
+
     if (mode === "work") {
-      setCompletedMinutes(profile?.pomodoroMinutes || 25);
+      setCompletedMinutes(duration);
       setShowSaveDialog(true);
     } else {
       resetTimer();
